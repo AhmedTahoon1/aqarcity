@@ -1,0 +1,293 @@
+project:
+  name: Aqar Cty 
+  description: >
+    منصة عقارية ديناميكية ذكية 100% موجهة لسوق الإمارات العربية المتحدة.
+    تدعم الذكاء الاصطناعي، ثنائية اللغة، وإدارة العقارات والمستخدمين والوكلاء والمحادثات الفورية.
+    الهدف هو تمكين المستثمرين والمشترين من اتخاذ قرارات دقيقة من خلال تجربة رقمية سلسة وذكية.
+
+  version: 1.0.0
+  environment: production
+  repository: https://github.com/AhmedTahoon1/aqar-city
+
+# -------------------------------------------------------
+# 🏗️ البنية التقنية
+# -------------------------------------------------------
+
+stack:
+  frontend:
+    framework: React 18 + TypeScript
+    styling: TailwindCSS + Shadcn UI
+    routing: Wouter
+    state_management: TanStack Query
+    translations: i18next (RTL/LTR)
+    pwa: true
+    maps: Google Maps API
+    real_time: Socket.io-client
+
+  backend:
+    framework: Node.js + Express.js
+    database: PostgreSQL + Drizzle ORM
+    auth: JWT + OAuth (Google, Apple, GitHub)
+    ai_services: OpenAI API (GPT-4)
+    messaging: Twilio WhatsApp API
+    email: Nodemailer
+    real_time: Socket.io
+    file_storage: Cloudinary or AWS S3
+
+  hosting:
+    options: [AWS, Vercel, Render, Supabase]
+    cdn: Cloudflare
+    deployment_strategy: CI/CD (GitHub Actions)
+
+# -------------------------------------------------------
+# 🧰 إعداد البيئة (Environment Setup)
+# -------------------------------------------------------
+
+setup:
+  prerequisites:
+    - Node.js >= 20.x
+    - PostgreSQL >= 16.x
+    - Git
+    - pnpm أو npm
+    - OpenAI API Key
+    - Twilio API credentials
+    - Google Maps API Key
+    - Cloudinary credentials
+  installation:
+    - step: "Clone repository"
+      command: git clone https://github.com/aqarcity/aqar-city-uae.git
+    - step: "Install dependencies"
+      command: cd aqar-city-uae && pnpm install
+    - step: "Setup environment variables"
+      command: cp .env.example .env
+    - step: "Run database migrations"
+      command: pnpm drizzle:migrate
+    - step: "Start backend"
+      command: pnpm dev:server
+    - step: "Start frontend"
+      command: pnpm dev:client
+  verification:
+    - url: http://localhost:3000
+      check: "Home page renders successfully"
+    - command: "pnpm test"
+      check: "All test suites pass"
+
+# -------------------------------------------------------
+# 🗄️ قاعدة البيانات
+# -------------------------------------------------------
+
+database:
+  engine: PostgreSQL
+  orm: Drizzle
+  migrations_path: /drizzle/
+  schema_file: /shared/schema.ts
+  tables:
+    - users
+    - properties
+    - agents
+    - developers
+    - favorites
+    - inquiries
+    - chat_messages
+    - blog_posts
+  features:
+    - indexing
+    - foreign_keys
+    - automatic timestamps
+    - soft deletes
+    - JSON fields for flexible metadata
+
+# -------------------------------------------------------
+# ⚙️ الـ APIs
+# -------------------------------------------------------
+
+api:
+  base_url: /api/v1
+  authentication: JWT + OAuth
+  endpoints:
+    properties:
+      - GET /properties
+      - GET /properties/:id
+      - POST /properties
+      - PUT /properties/:id
+      - DELETE /properties/:id
+    users:
+      - POST /auth/login
+      - POST /auth/register
+      - GET /auth/me
+      - PUT /auth/profile
+    agents:
+      - GET /agents
+      - GET /agents/:id
+      - POST /agents/:id/review
+    favorites:
+      - GET /favorites
+      - POST /favorites
+      - DELETE /favorites/:id
+    inquiries:
+      - POST /inquiries
+      - GET /inquiries
+      - PUT /inquiries/:id
+    chat:
+      - WS /socket/chat
+      - POST /chat/send
+      - GET /chat/:propertyId
+    ai:
+      - POST /ai/generate-description
+      - POST /ai/chat
+      - POST /ai/recommend
+    analytics:
+      - GET /analytics/overview
+      - GET /analytics/properties
+      - GET /analytics/market
+
+# -------------------------------------------------------
+# 🧠 الذكاء الاصطناعي (AI Layer)
+# -------------------------------------------------------
+
+ai:
+  provider: OpenAI
+  model: gpt-4-turbo
+  use_cases:
+    - توليد أوصاف العقارات تلقائيًا
+    - توصيات ذكية للمستخدمين
+    - مساعد محادثة تفاعلي داخل الموقع
+    - تحليل بيانات السوق العقاري
+  safety:
+    - limit: 30 requests/minute
+    - content_filter: enabled
+    - prompt_engineering: structured_templates
+
+# -------------------------------------------------------
+# 💬 المراسلات والتكاملات الخارجية
+# -------------------------------------------------------
+
+integrations:
+  whatsapp:
+    provider: Twilio
+    business_number: ${TWILIO_WHATSAPP_NUMBER}
+    use_cases:
+      - إرسال استفسارات العقارات
+      - إشعارات المستخدمين الفورية
+  email:
+    provider: Nodemailer
+    smtp_host: smtp.gmail.com
+    sender: support@aqarcity.ae
+  analytics:
+    google_analytics_id: ${VITE_GA_MEASUREMENT_ID}
+    meta_pixel_id: ${VITE_META_PIXEL_ID}
+  maps:
+    provider: Google Maps
+    api_key: ${VITE_GOOGLE_MAPS_API_KEY}
+  storage:
+    provider: Cloudinary
+    bucket: aqarcity-images
+
+# -------------------------------------------------------
+# 🧑‍💻 لوحة التحكم (Admin Panel)
+# -------------------------------------------------------
+
+admin_panel:
+  roles: [super_admin, admin, agent, editor]
+  permissions:
+    super_admin: full_access
+    admin: manage_all_except_settings
+    agent: manage_own_properties
+    editor: manage_blog
+  modules:
+    - Dashboard Overview
+    - Property Management
+    - Users & Agents
+    - Reports & Analytics
+    - AI Recommendations
+    - System Logs
+    - Settings
+
+# -------------------------------------------------------
+# 🌐 واجهة المستخدم
+# -------------------------------------------------------
+
+frontend:
+  languages: [ar, en]
+  rtl_support: true
+  pages:
+    - /
+    - /properties
+    - /property/:id
+    - /agents
+    - /agent/:id
+    - /dashboard
+    - /admin
+    - /blog
+    - /insights
+  components:
+    - Header
+    - HeroSection
+    - SearchBar
+    - PropertyCard
+    - AgentCard
+    - ChatBot
+    - WhatsAppButton
+    - LanguageSwitcher
+    - ThemeToggle
+    - Footer
+    - Sidebar
+    - DataTable
+    - ChartComponents
+
+# -------------------------------------------------------
+# 🧩 مراحل التنفيذ (Phases)
+# -------------------------------------------------------
+
+phases:
+  - phase: 1
+    name: Infrastructure Setup
+    tasks:
+      - Initialize project structure
+      - Setup PostgreSQL + Drizzle ORM
+      - Configure environment variables
+      - Setup authentication
+  - phase: 2
+    name: API Development
+    tasks:
+      - Build core APIs (Users, Properties, Agents)
+      - Implement AI endpoints
+      - Integrate Google Maps and WhatsApp
+  - phase: 3
+    name: Frontend Development
+    tasks:
+      - Build Home, Property, and Agent pages
+      - Implement filters and search
+      - Setup PWA and language switching
+  - phase: 4
+    name: Admin Dashboard
+    tasks:
+      - Create role-based system
+      - Build analytics and reports
+      - Integrate AI recommendations
+  - phase: 5
+    name: Real-time & AI Features
+    tasks:
+      - Add chatbot
+      - Setup socket.io for messaging
+      - Add live analytics dashboards
+  - phase: 6
+    name: Testing & Deployment
+    tasks:
+      - Unit and integration tests
+      - Security and SEO audit
+      - Deploy to production
+      - Setup monitoring and backup system
+
+# -------------------------------------------------------
+# ✅ مخرجات المشروع النهائية
+# -------------------------------------------------------
+
+outputs:
+  - Full stack codebase (client + server)
+  - PostgreSQL database with migrations
+  - Admin dashboard with analytics
+  - AI chatbot integration
+  - SEO-optimized, bilingual, responsive website
+  - Documentation (README + API Docs + Setup Guide)
+  - Production-ready CI/CD configuration
