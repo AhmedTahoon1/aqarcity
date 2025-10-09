@@ -53,7 +53,7 @@ export default function Header() {
 
   const infoMenuItems = [
     { href: '/about', label: t('nav.about') },
-    { href: '/careers', label: 'Careers' },
+    { href: '/careers', label: t('nav.careers') },
     { href: '/contact', label: t('nav.contact') },
   ];
 

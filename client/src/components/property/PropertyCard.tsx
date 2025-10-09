@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useTranslation } from 'react-i18next';
-import { Heart, MapPin, Bed, Bath, Square, ChevronLeft, ChevronRight, Phone, MessageCircle } from 'lucide-react';
+import { Heart, MapPin, Bed, Bath, Square, ChevronLeft, ChevronRight, Phone, MessageCircle, GitCompare } from 'lucide-react';
 import { useFavorites } from '../../hooks/useFavorites';
 import { motion } from 'framer-motion';
 import { FavoriteButton } from '../animations';
+import { useCompareStore } from '../../stores/compareStore';
 
 interface Property {
   id: string;
@@ -42,8 +43,10 @@ interface PropertyCardProps {
 export default function PropertyCard({ property }: PropertyCardProps) {
   const { t, i18n } = useTranslation();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
+  const { addProperty, removeProperty, isInCompare, canAdd } = useCompareStore();
   const isArabic = i18n.language === 'ar';
   const favorited = isFavorite(property.id);
+  const inCompare = isInCompare(property.id);
   
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -167,6 +170,28 @@ export default function PropertyCard({ property }: PropertyCardProps) {
     }
   };
 
+  const handleCompareClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (inCompare) {
+      removeProperty(property.id);
+    } else if (canAdd()) {
+      addProperty({
+        id: property.id,
+        title: (isArabic ? property.titleAr : property.titleEn) || 'Property',
+        price: parseFloat(property.price),
+        city: property.city,
+        propertyType: property.propertyType,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        area: property.areaSqft,
+        images: property.images || ['/sample.svg'],
+        status: property.status
+      });
+    }
+  };
+
   return (
     <motion.div 
       className="card overflow-hidden"
@@ -267,12 +292,26 @@ export default function PropertyCard({ property }: PropertyCardProps) {
           )}
         </div>
         
-        {/* Favorite Button */}
-        <div className="absolute top-3 right-3">
+        {/* Action Buttons */}
+        <div className="absolute top-3 right-3 flex flex-col space-y-2">
           <FavoriteButton 
             isFavorite={favorited}
             onClick={handleFavoriteClick}
           />
+          <motion.button
+            onClick={handleCompareClick}
+            className={`p-2 rounded-full backdrop-blur-sm transition-all duration-300 ${
+              inCompare 
+                ? 'bg-primary-600 text-white shadow-lg' 
+                : 'bg-white/90 text-gray-700 hover:bg-primary-50 hover:text-primary-600'
+            } ${!canAdd() && !inCompare ? 'opacity-50 cursor-not-allowed' : ''}`}
+            whileHover={canAdd() || inCompare ? { scale: 1.1 } : {}}
+            whileTap={canAdd() || inCompare ? { scale: 0.9 } : {}}
+            disabled={!canAdd() && !inCompare}
+            title={inCompare ? (isArabic ? 'إزالة من المقارنة' : 'Remove from compare') : (isArabic ? 'إضافة للمقارنة' : 'Add to compare')}
+          >
+            <GitCompare className="w-4 h-4" />
+          </motion.button>
         </div>
       </div>
 

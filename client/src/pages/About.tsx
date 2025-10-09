@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'wouter';
 import { Building, Users, Award, Target, Heart, Shield, TrendingUp } from 'lucide-react';
 import { analyticsAPI, propertiesAPI, agentsAPI } from '../lib/api';
+import { AboutSkeleton } from '../components/skeletons';
 
 export default function About() {
   const { t, i18n } = useTranslation();
@@ -86,6 +87,8 @@ export default function About() {
         : 'Committed to delivering exceptional service and premium property solutions.'
     }
   ];
+
+
 
   return (
     <div className="min-h-screen bg-gray-50">

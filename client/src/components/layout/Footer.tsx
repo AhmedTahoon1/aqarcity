@@ -3,26 +3,27 @@ import { useTranslation } from 'react-i18next';
 import { Phone, Mail, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 
 export default function Footer() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
 
   const footerLinks = {
     company: [
       { href: '/about', label: t('nav.about') },
       { href: '/contact', label: t('nav.contact') },
-      { href: '/careers', label: 'Careers' },
-      { href: '/blog', label: 'Blog' },
+      { href: '/careers', label: t('nav.careers') },
+      { href: '/blog', label: t('footer.blog') },
     ],
     services: [
       { href: '/properties', label: t('nav.properties') },
       { href: '/agents', label: t('nav.agents') },
-      { href: '/mortgage', label: 'Mortgage Calculator' },
-      { href: '/investment', label: 'Investment Guide' },
+      { href: '/mortgage', label: t('footer.mortgage') },
+      { href: '/investment', label: t('footer.investment') },
     ],
     legal: [
-      { href: '/privacy', label: 'Privacy Policy' },
-      { href: '/terms', label: 'Terms of Service' },
-      { href: '/cookies', label: 'Cookie Policy' },
-      { href: '/disclaimer', label: 'Disclaimer' },
+      { href: '/privacy', label: t('footer.privacy') },
+      { href: '/terms', label: t('footer.terms') },
+      { href: '/cookies', label: t('footer.cookies') },
+      { href: '/disclaimer', label: t('footer.disclaimer') },
     ]
   };
 
@@ -46,8 +47,7 @@ export default function Footer() {
               <span className="text-xl font-bold">Aqar City UAE</span>
             </div>
             <p className="text-gray-300 mb-4">
-              Your trusted partner in finding the perfect property in the UAE. 
-              Premium real estate solutions with cutting-edge technology.
+              {t('footer.description')}
             </p>
             <div className="space-y-2">
               <div className="flex items-center text-gray-300">
@@ -67,7 +67,7 @@ export default function Footer() {
 
           {/* Company Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Company</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.company')}</h3>
             <ul className="space-y-2">
               {footerLinks.company.map((link, index) => (
                 <li key={index}>
@@ -83,7 +83,7 @@ export default function Footer() {
 
           {/* Services Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Services</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.services')}</h3>
             <ul className="space-y-2">
               {footerLinks.services.map((link, index) => (
                 <li key={index}>
@@ -99,7 +99,7 @@ export default function Footer() {
 
           {/* Legal Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Legal</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.legal')}</h3>
             <ul className="space-y-2">
               {footerLinks.legal.map((link, index) => (
                 <li key={index}>
@@ -117,7 +117,7 @@ export default function Footer() {
         {/* Bottom Section */}
         <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="text-gray-300 text-sm mb-4 md:mb-0">
-            © 2024 Aqar City UAE. All rights reserved.
+            © 2024 Aqar City UAE. {t('footer.rights')}.
           </div>
           
           {/* Social Links */}

@@ -135,7 +135,14 @@ export default function DeveloperDetails() {
                 {properties.data.map((property: any) => (
                   <PropertyCard
                     key={property.id}
-                    property={property}
+                    property={{
+                      ...property,
+                      agent: property.agent || {
+                        id: dev.id,
+                        phone: dev.phone,
+                        whatsapp: dev.whatsapp
+                      }
+                    }}
                   />
                 ))}
               </div>

@@ -6,3 +6,4 @@ export { default as SearchBarSkeleton } from './SearchBarSkeleton';
 export { default as PropertyDetailsSkeleton } from './PropertyDetailsSkeleton';
 export { default as JobCardSkeleton } from './JobCardSkeleton';
 export { default as NotificationSkeleton } from './NotificationSkeleton';
+export { AboutSkeleton } from './AboutSkeleton';

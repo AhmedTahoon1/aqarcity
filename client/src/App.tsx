@@ -1,11 +1,13 @@
 import { Router, Route } from 'wouter';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { queryClient } from '@/lib/queryClient';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import LoadingFallback from '@/components/ui/LoadingFallback';
+import CompareBar from '@/components/compare/CompareBar';
 import '@/i18n/config';
 
 // Lazy load all page components
@@ -26,8 +28,18 @@ const Notifications = lazy(() => import('@/pages/Notifications'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const About = lazy(() => import('@/pages/About'));
 const Contact = lazy(() => import('@/pages/Contact'));
+const Compare = lazy(() => import('@/pages/Compare'));
 
 function App() {
+  const { i18n } = useTranslation();
+
+  // Set direction on app load and language change
+  useEffect(() => {
+    const direction = i18n.language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.dir = direction;
+    document.documentElement.lang = i18n.language;
+  }, [i18n.language]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
@@ -60,8 +72,10 @@ function App() {
               </Route>
               <Route path="/about" component={About} />
               <Route path="/contact" component={Contact} />
+              <Route path="/compare" component={Compare} />
             </Suspense>
           </main>
+          <CompareBar />
           <Footer />
         </div>
       </Router>

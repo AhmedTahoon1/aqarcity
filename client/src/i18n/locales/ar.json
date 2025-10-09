@@ -5,6 +5,7 @@
     "agents": "الوكلاء",
     "developers": "المطورين",
     "jobs": "الوظائف",
+    "careers": "الوظائف",
     "about": "من نحن",
     "contact": "اتصل بنا",
     "login": "تسجيل الدخول",
@@ -43,7 +44,19 @@
     "featured": "مميز",
     "call": "اتصال",
     "whatsapp": "واتساب",
-    "similarProperties": "عقارات مشابهة"
+    "similarProperties": "عقارات مشابهة",
+    "subtitle": "تصفح أفضل العقارات في الإمارات",
+    "properties": "عقار",
+    "newest": "الأحدث",
+    "oldest": "الأقدم",
+    "priceLowHigh": "السعر: من الأقل للأعلى",
+    "priceHighLow": "السعر: من الأعلى للأقل",
+    "noProperties": "لا توجد عقارات",
+    "adjustFilters": "جرب تعديل الفلاتر",
+    "loadingFailed": "خطأ في التحميل",
+    "tryAgain": "حاول مرة أخرى",
+    "page": "صفحة",
+    "of": "من"
   },
   "filters": {
     "city": "المدينة",
@@ -65,7 +78,45 @@
     "minPrice": "أقل سعر",
     "maxPrice": "أعلى سعر",
     "anyBedrooms": "أي عدد غرف",
-    "anyBathrooms": "أي عدد حمامات"
+    "anyBathrooms": "أي عدد حمامات",
+    "minPricePlaceholder": "صفر",
+    "maxPricePlaceholder": "لا نهاية",
+    "villa": "فيلا",
+    "apartment": "شقة",
+    "townhouse": "تاون هاوس",
+    "penthouse": "بنتهاوس",
+    "studio": "استوديو"
+  },
+  "agents": {
+    "title": "وكلاء العقارات",
+    "subtitle": "تعرف على وكلاء العقارات المعتمدين لدينا",
+    "verified": "موثق",
+    "license": "الرخصة",
+    "languages": "اللغات",
+    "noAgents": "لا يوجد وكلاء",
+    "checkLater": "يرجى المحاولة لاحقاً"
+  },
+  "developers": {
+    "title": "المطورين العقاريين",
+    "subtitle": "اكتشف أفضل المطورين العقاريين في الإمارات",
+    "projects": "مشروع",
+    "website": "موقع إلكتروني",
+    "noDevelopers": "لا توجد مطورين",
+    "noDescription": "لم يتم العثور على مطورين عقاريين"
+  },
+  "footer": {
+    "description": "شريكك الموثوق في العثور على العقار المثالي في الإمارات. حلول عقارية متميزة بتقنية متطورة.",
+    "company": "الشركة",
+    "services": "الخدمات",
+    "legal": "قانوني",
+    "blog": "المدونة",
+    "mortgage": "حاسبة الرهن العقاري",
+    "investment": "دليل الاستثمار",
+    "privacy": "سياسة الخصوصية",
+    "terms": "شروط الخدمة",
+    "cookies": "سياسة ملفات تعريف الارتباط",
+    "disclaimer": "إخلاء المسؤولية",
+    "rights": "جميع الحقوق محفوظة"
   },
   "common": {
     "loading": "جاري التحميل...",

@@ -21,10 +21,10 @@ export default function Developers() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            {isArabic ? 'المطورين العقاريين' : 'Real Estate Developers'}
+            {t('developers.title')}
           </h1>
           <p className="text-gray-600">
-            {isArabic ? 'اكتشف أفضل المطورين العقاريين في الإمارات' : 'Discover top real estate developers in UAE'}
+            {t('developers.subtitle')}
           </p>
         </div>
 
@@ -64,13 +64,13 @@ export default function Developers() {
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <div className="flex items-center">
                       <Building2 className="w-4 h-4 mr-1" />
-                      <span>{developer.projectsCount} {isArabic ? 'مشروع' : 'Projects'}</span>
+                      <span>{developer.projectsCount} {t('developers.projects')}</span>
                     </div>
                     
                     {developer.website && (
                       <div className="flex items-center">
                         <Globe className="w-4 h-4 mr-1" />
-                        <span>{isArabic ? 'موقع إلكتروني' : 'Website'}</span>
+                        <span>{t('developers.website')}</span>
                       </div>
                     )}
                   </div>
@@ -85,10 +85,10 @@ export default function Developers() {
           <div className="text-center py-12">
             <Building2 className="w-16 h-16 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {isArabic ? 'لا توجد مطورين' : 'No developers found'}
+              {t('developers.noDevelopers')}
             </h3>
             <p className="text-gray-600">
-              {isArabic ? 'لم يتم العثور على مطورين عقاريين' : 'No real estate developers found'}
+              {t('developers.noDescription')}
             </p>
           </div>
         )}

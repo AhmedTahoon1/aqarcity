@@ -5,6 +5,7 @@
     "agents": "Agents",
     "developers": "Developers",
     "jobs": "Jobs",
+    "careers": "Careers",
     "about": "About",
     "contact": "Contact",
     "login": "Login",
@@ -43,7 +44,19 @@
     "featured": "Featured",
     "call": "Call",
     "whatsapp": "WhatsApp",
-    "similarProperties": "Similar Properties"
+    "similarProperties": "Similar Properties",
+    "subtitle": "Browse the best properties in UAE",
+    "properties": "properties",
+    "newest": "Newest",
+    "oldest": "Oldest",
+    "priceLowHigh": "Price: Low to High",
+    "priceHighLow": "Price: High to Low",
+    "noProperties": "No Properties Found",
+    "adjustFilters": "Try adjusting your filters",
+    "loadingFailed": "Loading Failed",
+    "tryAgain": "Please try again",
+    "page": "Page",
+    "of": "of"
   },
   "filters": {
     "city": "City",
@@ -65,7 +78,45 @@
     "minPrice": "Min Price",
     "maxPrice": "Max Price",
     "anyBedrooms": "Any Bedrooms",
-    "anyBathrooms": "Any Bathrooms"
+    "anyBathrooms": "Any Bathrooms",
+    "minPricePlaceholder": "0",
+    "maxPricePlaceholder": "∞",
+    "villa": "Villa",
+    "apartment": "Apartment",
+    "townhouse": "Townhouse",
+    "penthouse": "Penthouse",
+    "studio": "Studio"
+  },
+  "agents": {
+    "title": "Real Estate Agents",
+    "subtitle": "Meet our certified real estate professionals",
+    "verified": "Verified",
+    "license": "License",
+    "languages": "Languages",
+    "noAgents": "No agents found",
+    "checkLater": "Please check back later"
+  },
+  "developers": {
+    "title": "Real Estate Developers",
+    "subtitle": "Discover top real estate developers in UAE",
+    "projects": "Projects",
+    "website": "Website",
+    "noDevelopers": "No developers found",
+    "noDescription": "No real estate developers found"
+  },
+  "footer": {
+    "description": "Your trusted partner in finding the perfect property in the UAE. Premium real estate solutions with cutting-edge technology.",
+    "company": "Company",
+    "services": "Services",
+    "legal": "Legal",
+    "blog": "Blog",
+    "mortgage": "Mortgage Calculator",
+    "investment": "Investment Guide",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "cookies": "Cookie Policy",
+    "disclaimer": "Disclaimer",
+    "rights": "All rights reserved"
   },
   "common": {
     "loading": "Loading...",

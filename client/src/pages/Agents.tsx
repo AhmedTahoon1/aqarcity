@@ -28,7 +28,7 @@ export default function Agents() {
             {agent.verified && (
               <div className="flex items-center text-green-600">
                 <Award className="w-4 h-4 mr-1" />
-                <span className="text-sm">Verified</span>
+                <span className="text-sm">{t('agents.verified')}</span>
               </div>
             )}
           </div>
@@ -37,7 +37,7 @@ export default function Agents() {
             <Star className="w-4 h-4 text-yellow-400 fill-current" />
             <span className="ml-1 text-sm font-medium">{agent.rating}</span>
             <span className="ml-2 text-sm text-gray-500">
-              License: {agent.licenseNumber}
+              {t('agents.license')}: {agent.licenseNumber}
             </span>
           </div>
           
@@ -50,17 +50,17 @@ export default function Agents() {
               <MapPin className="w-4 h-4 mr-1" />
               <span>Dubai, UAE</span>
             </div>
-            <div>Languages: {agent.languages.join(', ')}</div>
+            <div>{t('agents.languages')}: {agent.languages.join(', ')}</div>
           </div>
           
           <div className="flex space-x-3 rtl:space-x-reverse">
             <button className="btn btn-primary flex items-center space-x-2 rtl:space-x-reverse">
               <Phone className="w-4 h-4" />
-              <span>Call</span>
+              <span>{t('common.call')}</span>
             </button>
             <button className="btn btn-secondary flex items-center space-x-2 rtl:space-x-reverse">
               <MessageCircle className="w-4 h-4" />
-              <span>WhatsApp</span>
+              <span>{t('common.whatsapp')}</span>
             </button>
           </div>
         </div>
@@ -73,10 +73,10 @@ export default function Agents() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            {t('nav.agents')}
+            {t('agents.title')}
           </h1>
           <p className="text-xl text-gray-600">
-            Meet our certified real estate professionals
+            {t('agents.subtitle')}
           </p>
         </div>
 
@@ -103,8 +103,8 @@ export default function Agents() {
             <div className="text-gray-400 mb-4">
               <Award className="w-16 h-16 mx-auto" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No agents found</h3>
-            <p className="text-gray-600">Please check back later</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{t('agents.noAgents')}</h3>
+            <p className="text-gray-600">{t('agents.checkLater')}</p>
           </div>
         )}
       </div>

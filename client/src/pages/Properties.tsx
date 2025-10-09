@@ -26,10 +26,10 @@ export default function Properties() {
   ];
 
   const propertyTypes = [
-    { value: 'villa', label: isArabic ? 'فيلا' : 'Villa' },
-    { value: 'apartment', label: isArabic ? 'شقة' : 'Apartment' },
-    { value: 'townhouse', label: isArabic ? 'تاون هاوس' : 'Townhouse' },
-    { value: 'penthouse', label: isArabic ? 'بنتهاوس' : 'Penthouse' },
+    { value: 'villa', label: t('filters.villa') },
+    { value: 'apartment', label: t('filters.apartment') },
+    { value: 'townhouse', label: t('filters.townhouse') },
+    { value: 'penthouse', label: t('filters.penthouse') },
   ];
 
   const statusOptions = [
@@ -38,7 +38,7 @@ export default function Properties() {
   ];
 
   const bedroomOptions = [
-    { value: '0', label: isArabic ? 'استوديو' : 'Studio' },
+    { value: '0', label: t('filters.studio') },
     { value: '1', label: '1' },
     { value: '2', label: '2' },
     { value: '3', label: '3' },
@@ -111,7 +111,7 @@ export default function Properties() {
             {t('nav.properties')}
           </h1>
           <p className="text-gray-600">
-            {isArabic ? 'تصفح أفضل العقارات في الإمارات' : 'Browse the best properties in UAE'}
+            {t('property.subtitle')}
           </p>
         </div>
 
@@ -193,7 +193,7 @@ export default function Properties() {
               </label>
               <input
                 type="number"
-                placeholder="0"
+                placeholder={t('filters.minPricePlaceholder')}
                 value={filters.minPrice || ''}
                 onChange={(e) => handleFilterChange('minPrice', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
@@ -207,7 +207,7 @@ export default function Properties() {
               </label>
               <input
                 type="number"
-                placeholder="∞"
+                placeholder={t('filters.maxPricePlaceholder')}
                 value={filters.maxPrice || ''}
                 onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
@@ -232,7 +232,7 @@ export default function Properties() {
         {/* View Toggle & Sort */}
         <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
           <div className="text-sm text-gray-600">
-            {propertiesData?.data?.pagination?.total || 0} {isArabic ? 'عقار' : 'properties'}
+            {propertiesData?.data?.pagination?.total || 0} {t('property.properties')}
           </div>
           <div className="flex items-center space-x-3 rtl:space-x-reverse">
             {/* Sort Dropdown */}
@@ -241,10 +241,10 @@ export default function Properties() {
               onChange={(e) => handleSortChange(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
-              <option value="newest">{isArabic ? 'الأحدث' : 'Newest'}</option>
-              <option value="oldest">{isArabic ? 'الأقدم' : 'Oldest'}</option>
-              <option value="price_asc">{isArabic ? 'السعر: من الأقل للأعلى' : 'Price: Low to High'}</option>
-              <option value="price_desc">{isArabic ? 'السعر: من الأعلى للأقل' : 'Price: High to Low'}</option>
+              <option value="newest">{t('property.newest')}</option>
+              <option value="oldest">{t('property.oldest')}</option>
+              <option value="price_asc">{t('property.priceLowHigh')}</option>
+              <option value="price_desc">{t('property.priceHighLow')}</option>
             </select>
             
             {/* View Mode Toggle */}
@@ -272,10 +272,10 @@ export default function Properties() {
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-red-900 mb-2">
-              {isArabic ? 'خطأ في التحميل' : 'Loading Failed'}
+              {t('property.loadingFailed')}
             </h3>
             <p className="text-red-700 mb-4">
-              {isArabic ? 'حاول مرة أخرى' : 'Please try again'}
+              {t('property.tryAgain')}
             </p>
             <button 
               onClick={() => window.location.reload()} 
@@ -290,10 +290,10 @@ export default function Properties() {
               <Grid className="w-16 h-16 mx-auto" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {isArabic ? 'لا توجد عقارات' : 'No Properties Found'}
+              {t('property.noProperties')}
             </h3>
             <p className="text-gray-600 mb-4">
-              {isArabic ? 'جرب تعديل الفلاتر' : 'Try adjusting your filters'}
+              {t('property.adjustFilters')}
             </p>
             <button 
               onClick={clearFilters} 
@@ -374,7 +374,7 @@ export default function Properties() {
             </div>
             
             <div className="text-center mt-4 text-sm text-gray-600">
-              {isArabic ? 'صفحة' : 'Page'} {currentPage} {isArabic ? 'من' : 'of'} {propertiesData.data.pagination.totalPages}
+              {t('property.page')} {currentPage} {t('property.of')} {propertiesData.data.pagination.totalPages}
             </div>
           </div>
         )}
