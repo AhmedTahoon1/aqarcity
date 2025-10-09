@@ -44,6 +44,7 @@ export default function Developers() {
                     <img 
                       src={developer.logo} 
                       alt={isArabic ? developer.nameAr : developer.nameEn}
+                      loading="lazy"
                       className="h-16 w-auto object-contain"
                     />
                   ) : (

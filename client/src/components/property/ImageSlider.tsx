@@ -30,6 +30,7 @@ export default function ImageSlider({ images, title }: ImageSliderProps) {
         <img
           src={displayImages[currentIndex]}
           alt={title}
+          loading="lazy"
           className="w-full h-full object-cover cursor-pointer"
           onClick={() => setIsFullscreen(true)}
           onError={(e) => {
@@ -85,6 +86,7 @@ export default function ImageSlider({ images, title }: ImageSliderProps) {
             <img
               src={displayImages[currentIndex]}
               alt={title}
+              loading="lazy"
               className="max-w-full max-h-full object-contain"
               onError={(e) => {
                 e.currentTarget.src = '/sample.svg';

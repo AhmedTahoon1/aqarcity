@@ -194,6 +194,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
           <img
             src={(property.images?.length > 0 ? property.images : ['/sample.svg'])[currentImageIndex]}
             alt={`${(isArabic ? property.titleAr : property.titleEn) || 'Property'} - Image ${currentImageIndex + 1}`}
+            loading="lazy"
             className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${
               isImageLoading ? 'opacity-0' : 'opacity-100'
             }`}

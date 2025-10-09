@@ -469,6 +469,7 @@ export default function PropertyDetails() {
               <img 
                 src={property.masterPlanImage || '/sample.svg'} 
                 alt="Master Plan" 
+                loading="lazy"
                 className="w-full h-auto max-h-[70vh] object-contain"
               />
             </div>
