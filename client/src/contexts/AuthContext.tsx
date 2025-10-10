@@ -9,6 +9,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   logout: () => void;
   refreshAuth: () => Promise<void>;
+  updateUserProfile: (profileData: { name: string; phone?: string; avatar?: string }) => Promise<User>;
   discoveredSearches: any[];
   showDiscoveryModal: boolean;
   setShowDiscoveryModal: (show: boolean) => void;
@@ -104,11 +105,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         const userData = await authService.getCurrentUser();
         setUser(userData);
+        console.log('✅ User data refreshed:', userData.name);
       } catch (error) {
+        console.error('❌ Failed to refresh user data:', error);
         setUser(null);
       }
     } else {
       setUser(null);
+    }
+  };
+
+  const updateUserProfile = async (profileData: { name: string; phone?: string; avatar?: string }) => {
+    try {
+      const updatedUser = await authService.updateProfile(profileData);
+      setUser(updatedUser);
+      return updatedUser;
+    } catch (error) {
+      console.error('❌ Profile update failed:', error);
+      throw error;
     }
   };
 
@@ -118,6 +132,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated: authService.isAuthenticated() && !!user,
     logout,
     refreshAuth,
+    updateUserProfile,
     discoveredSearches,
     showDiscoveryModal,
     setShowDiscoveryModal

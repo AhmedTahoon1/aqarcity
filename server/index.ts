@@ -13,10 +13,29 @@ const PORT = process.env.PORT || 3000;
 app.set('trust proxy', 1);
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https:", "wss:"],
+    },
+  },
+}));
+
 app.use(cors({
-  origin: true,
-  credentials: true
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:3001', 
+    'http://localhost:5173',
+    process.env.CLIENT_URL
+  ].filter(Boolean),
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 // Rate limiting
@@ -42,6 +61,7 @@ app.get('/health', (req, res) => {
 
 // Import routes
 import authRoutes from './routes/auth.js';
+import oauthRoutes from './routes/oauth.js';
 import propertiesRoutes from './routes/properties.js';
 import agentsRoutes from './routes/agents.js';
 import developersRoutes from './routes/developers.js';
@@ -57,6 +77,7 @@ import usersRoutes from './routes/users.js';
 
 // API routes
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/oauth', oauthRoutes);
 app.use('/api/v1/properties', propertiesRoutes);
 app.use('/api/v1/agents', agentsRoutes);
 app.use('/api/v1/developers', developersRoutes);

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-const API_URL = import.meta.env.DEV ? '/api' : (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1');
+const API_URL = import.meta.env.DEV ? '/api/v1' : (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1');
 
 export interface User {
   id: string;
@@ -126,37 +126,31 @@ class AuthService {
     password: string;
   }): Promise<AuthResponse> {
     try {
-      console.log('Attempting login with:', { email: credentials.email });
-      console.log('API URL:', `${API_URL}/auth/login`);
+      console.log('⚙️ Attempting login for:', credentials.email);
       
       const response = await axios.post(`${API_URL}/auth/login`, credentials, {
-        timeout: 5000 // 5 second timeout
+        timeout: 10000,
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
-      console.log('Login response received:', response.data);
+      
+      console.log('✅ Login successful for:', credentials.email);
       this.setTokens(response.data.accessToken, response.data.refreshToken);
       return response.data;
     } catch (error: any) {
-      console.error('Login error in authService:', error);
+      console.error('❌ Login failed:', error.response?.data || error.message);
       
-      // Fallback for development when server is not running
-      if (credentials.email === 'admin@aqarcity.ae' && credentials.password === 'admin123!') {
-        console.log('Using fallback admin login');
-        const mockResponse = {
-          message: 'Login successful',
-          accessToken: 'mock-access-token-' + Date.now(),
-          refreshToken: 'mock-refresh-token-' + Date.now(),
-          user: {
-            id: 'admin-id',
-            email: credentials.email,
-            name: 'Admin User',
-            role: 'super_admin'
-          }
-        };
-        this.setTokens(mockResponse.accessToken, mockResponse.refreshToken);
-        return mockResponse;
+      // Enhanced error handling
+      if (error.response?.status === 401) {
+        throw new Error('بيانات تسجيل الدخول غير صحيحة');
+      } else if (error.response?.status === 400) {
+        throw new Error(error.response.data.message || 'بيانات غير صحيحة');
+      } else if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+        throw new Error('لا يمكن الاتصال بالخادم. يرجى المحاولة لاحقاً');
       }
       
-      throw error;
+      throw new Error('حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى');
     }
   }
 
@@ -167,10 +161,12 @@ class AuthService {
 
   async updateProfile(userData: {
     name: string;
-    phone: string;
-    languagePreference?: string;
+    phone?: string;
+    avatar?: string;
   }): Promise<User> {
+    console.log('🔄 Updating profile:', userData);
     const response = await axios.put(`${API_URL}/auth/profile`, userData);
+    console.log('✅ Profile updated successfully');
     return response.data.user;
   }
 

@@ -4,12 +4,15 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { propertiesAPI } from '../lib/api';
 import { PropertyDetailsSkeleton } from '../components/skeletons';
-import { MapPin, Bed, Bath, Square, Calendar, Heart, Phone, MessageCircle, Share2, ChevronDown, ChevronUp, Hash, CheckCircle, Clock, Image, CreditCard } from 'lucide-react';
+import { MapPin, Bed, Bath, Square, Calendar, Heart, Phone, MessageCircle, Share2, ChevronDown, ChevronUp, Hash, CheckCircle, Clock, Image, CreditCard, GitCompare } from 'lucide-react';
 import ImageSlider from '../components/property/ImageSlider';
 import YouTubeVideo from '../components/property/YouTubeVideo';
 import MortgageCalculator from '../components/property/MortgageCalculator';
 import InquiryForm from '../components/property/InquiryForm';
 import PropertyCard from '../components/property/PropertyCard';
+import { useFavorites } from '../hooks/useFavorites';
+import { useCompareStore } from '../stores/compareStore';
+import { FavoriteButton } from '../components/animations';
 
 export default function PropertyDetails() {
   const { id } = useParams();
@@ -17,6 +20,8 @@ export default function PropertyDetails() {
   const isArabic = i18n.language === 'ar';
   const [showMasterPlan, setShowMasterPlan] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
+  const { addProperty, removeProperty, isInCompare, canAdd } = useCompareStore();
 
   // Collapsible components
   const CollapsibleAgentCard = ({ agent, isArabic }: { agent: any; isArabic: boolean }) => {
@@ -201,8 +206,55 @@ export default function PropertyDetails() {
           title={isArabic ? property.titleAr : property.titleEn}
         />
         <div className="absolute top-4 right-4 flex space-x-2">
-          <button className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50">
-            <Heart className="w-5 h-5 text-gray-600" />
+          <FavoriteButton 
+            isFavorite={isFavorite(property.id)}
+            onClick={() => {
+              if (isFavorite(property.id)) {
+                removeFromFavorites(property.id);
+              } else {
+                addToFavorites({
+                  id: property.id,
+                  title: property.titleEn,
+                  titleAr: property.titleAr,
+                  location: property.location,
+                  price: parseFloat(property.price),
+                  bedrooms: property.bedrooms,
+                  bathrooms: property.bathrooms,
+                  area: property.areaSqft,
+                  images: property.images || ['/sample.svg'],
+                  type: property.propertyType
+                });
+              }
+            }}
+          />
+          <button 
+            onClick={() => {
+              if (isInCompare(property.id)) {
+                removeProperty(property.id);
+              } else if (canAdd()) {
+                addProperty({
+                  id: property.id,
+                  title: (isArabic ? property.titleAr : property.titleEn) || 'Property',
+                  price: parseFloat(property.price),
+                  city: property.city,
+                  propertyType: property.propertyType,
+                  bedrooms: property.bedrooms,
+                  bathrooms: property.bathrooms,
+                  area: property.areaSqft,
+                  images: property.images || ['/sample.svg'],
+                  status: property.status
+                });
+              }
+            }}
+            className={`p-2 rounded-full shadow-md transition-all duration-300 ${
+              isInCompare(property.id) 
+                ? 'bg-primary-600 text-white' 
+                : 'bg-white text-gray-600 hover:bg-primary-50 hover:text-primary-600'
+            } ${!canAdd() && !isInCompare(property.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={!canAdd() && !isInCompare(property.id)}
+            title={isInCompare(property.id) ? (isArabic ? 'إزالة من المقارنة' : 'Remove from compare') : (isArabic ? 'إضافة للمقارنة' : 'Add to compare')}
+          >
+            <GitCompare className="w-5 h-5" />
           </button>
           <button className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50">
             <Share2 className="w-5 h-5 text-gray-600" />

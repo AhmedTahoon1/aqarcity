@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
-import { Menu, X, Globe, Heart, User, LogOut, Settings, ChevronDown } from 'lucide-react';
+import { Menu, X, Globe, Heart, User, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function Header() {
@@ -37,11 +37,13 @@ export default function Header() {
     logout();
     setIsUserMenuOpen(false);
     setIsMenuOpen(false);
+    window.location.href = '/';
   };
 
   const toggleLanguage = () => {
     const newLang = i18n.language === 'en' ? 'ar' : 'en';
     i18n.changeLanguage(newLang);
+    localStorage.setItem('i18nextLng', newLang);
     document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = newLang;
   };
@@ -189,14 +191,6 @@ export default function Header() {
                         <span>{t('nav.profile')}</span>
                       </div>
                     </Link>
-                    <Link href="/settings">
-                      <div 
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="flex items-center space-x-2 rtl:space-x-reverse px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                        <Settings className="w-4 h-4" />
-                        <span>{t('nav.settings')}</span>
-                      </div>
-                    </Link>
                     <hr className="my-2" />
                     <button
                       onClick={handleLogout}
@@ -237,6 +231,13 @@ export default function Header() {
               <Link href="/properties">
                 <span className="block text-sm font-medium text-gray-700 hover:text-primary-600 cursor-pointer">
                   {t('nav.properties')}
+                </span>
+              </Link>
+              
+              <Link href="/favorites">
+                <span className="block text-sm font-medium text-gray-700 hover:text-primary-600 cursor-pointer">
+                  <Heart className="w-4 h-4 inline mr-2" />
+                  {t('nav.favorites') || 'المفضلة'}
                 </span>
               </Link>
 

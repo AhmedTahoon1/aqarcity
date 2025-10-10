@@ -17,6 +17,7 @@
     "db:seed-properties": "tsx drizzle/seed-simple-properties.ts",
     "db:add-agent": "tsx drizzle/add-default-agent.ts",
     "db:update-agents": "tsx drizzle/update-agents-contact.ts",
+    "check:users": "tsx drizzle/check-users.ts",
     "start": "node dist/server/index.js"
   },
   "dependencies": {

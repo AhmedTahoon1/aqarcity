@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Send, User, Mail, Phone, MessageCircle } from 'lucide-react';
+import { Send, User, Mail, MessageCircle } from 'lucide-react';
 import { inquiriesAPI } from '../../lib/api';
+import { PhoneInput } from '../ui/PhoneInput';
 
 interface InquiryFormProps {
   propertyId: string;
@@ -93,16 +94,12 @@ export default function InquiryForm({ propertyId, propertyTitle }: InquiryFormPr
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            <Phone className="w-4 h-4 inline mr-1" />
             Phone Number
           </label>
-          <input
-            type="tel"
-            name="phone"
+          <PhoneInput
             value={formData.phone}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            placeholder="+971 50 123 4567"
+            onChange={(value) => setFormData({ ...formData, phone: value })}
+            placeholder="50 123 4567"
           />
         </div>
 

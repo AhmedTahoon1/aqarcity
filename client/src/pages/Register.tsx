@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
-import { Eye, EyeOff, Mail, Lock, User, Phone } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { authService } from '../lib/auth';
 import { useAuth } from '../hooks/useAuth';
+import { PhoneInput } from '../components/ui/PhoneInput';
 
 export default function Register() {
   const [, setLocation] = useLocation();
@@ -119,16 +120,11 @@ export default function Register() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {isArabic ? 'رقم الهاتف' : 'Phone Number'}
               </label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder={isArabic ? 'أدخل رقم هاتفك' : 'Enter your phone number'}
-                />
-              </div>
+              <PhoneInput
+                value={formData.phone}
+                onChange={(value) => setFormData({ ...formData, phone: value })}
+                placeholder={isArabic ? 'أدخل رقم هاتفك' : 'Enter your phone number'}
+              />
             </div>
 
             <div>

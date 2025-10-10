@@ -67,113 +67,3 @@
 
 
 
-المرحلة 1: إصلاح إعدادات الخادم
-إصلاح متغيرات البيئة
-
-التأكد من وجود جميع متغيرات JWT
-
-إضافة متغيرات مفقودة للأمان
-
-تحسين middleware/auth.ts
-
-تبسيط آلية Token Refresh
-
-تحسين معالجة الأخطاء
-
-إضافة logging مفصل
-
-تحسين routes/auth.ts
-
-إضافة validation شامل باستخدام Zod
-
-تحسين معالجة الأخطاء
-
-تقليل قوة password hashing إلى 10 rounds
-
-إضافة rate limiting
-
-المرحلة 2: إصلاح العميل
-إصلاح lib/auth.ts
-
-تصحيح API URL
-
-تبسيط Token Management
-
-إزالة Fallback Login المربك
-
-تحسين Error Handling
-
-تحسين AuthContext
-
-تبسيط State Management
-
-إضافة Error States
-
-تحسين Loading States
-
-المرحلة 3: تحسين قاعدة البيانات
-إضافة Indexes مناسبة
-
-تحسين Users Schema
-
-إضافة Constraints مناسبة
-
-المرحلة 4: إضافة ميزات الأمان
-Rate Limiting
-
-Input Validation
-
-CORS Configuration
-
-Security Headers
-
-المرحلة 5: تحسين تجربة المستخدم
-Loading States
-
-Error Messages واضحة
-
-Form Validation
-
-Success Feedback
-
-المرحلة 6: الاختبار والتحقق
-Unit Tests للـ Auth Functions
-
-Integration Tests للـ Auth Flow
-
-Manual Testing لجميع السيناريوهات
-
-🎯 الأولويات:
-عالية الأولوية:
-إصلاح API URL في العميل
-
-تحسين معالجة الأخطاء
-
-إصلاح Token Refresh Logic
-
-متوسطة الأولوية:
-إضافة Validation شامل
-
-تحسين Security
-
-إضافة Rate Limiting
-
-منخفضة الأولوية:
-تحسين UI/UX
-
-إضافة Tests
-
-Performance Optimization
-
-📋 الملفات التي تحتاج إصلاح:
-server/routes/auth.ts - إصلاح شامل
-
-server/middleware/auth.ts - تبسيط وتحسين
-
-client/src/lib/auth.ts - إصلاح API URL وتبسيط
-
-client/src/contexts/AuthContext.tsx - تحسين State Management
-
-.env - إضافة متغيرات مفقودة
-
-server/index.ts - إضافة CORS وSecurity Headers

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'wouter';
 import { Heart, Trash2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { favoritesAPI } from '../lib/api';
@@ -21,41 +22,62 @@ interface Property {
 export default function Favorites() {
   const { t, i18n } = useTranslation();
   const { isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
   const [favorites, setFavorites] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const isArabic = i18n.language === 'ar';
 
+  // Redirect to login if not authenticated
   useEffect(() => {
-    loadFavorites();
-  }, [isAuthenticated]);
+    if (!loading && !isAuthenticated) {
+      window.location.href = '/login';
+      return;
+    }
+  }, [isAuthenticated, loading]);
+
+  // Don't render anything while checking auth or if not authenticated
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null; // Will redirect to login
+  }
+
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      loadFavorites();
+    }
+  }, [isAuthenticated, loading]);
 
   const loadFavorites = async () => {
+    setLoading(true);
     try {
-      if (isAuthenticated) {
-        const response = await favoritesAPI.getAll();
-        const favoriteProperties = response.data.map((item: any) => ({
-          id: item.property.id,
-          title: item.property.titleEn,
-          titleAr: item.property.titleAr,
-          price: parseFloat(item.property.price),
-          location: item.property.location,
-          bedrooms: item.property.bedrooms,
-          bathrooms: item.property.bathrooms,
-          area: item.property.areaSqft,
-          images: item.property.images || [],
-          type: item.property.propertyType
-        }));
-        setFavorites(favoriteProperties);
-      } else {
-        const localFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-        setFavorites(localFavorites);
-      }
+      const response = await favoritesAPI.getAll();
+      const favoriteProperties = response.data.map((item: any) => ({
+        id: item.property.id,
+        titleEn: item.property.titleEn,
+        titleAr: item.property.titleAr,
+        price: item.property.price,
+        currency: item.property.currency || 'AED',
+        location: item.property.location,
+        city: item.property.city,
+        status: item.property.status,
+        propertyType: item.property.propertyType,
+        bedrooms: item.property.bedrooms,
+        bathrooms: item.property.bathrooms,
+        areaSqft: item.property.areaSqft,
+        images: item.property.images || [],
+        isFeatured: item.property.isFeatured
+      }));
+      setFavorites(favoriteProperties);
     } catch (error) {
       console.error('Error loading favorites:', error);
-      if (!isAuthenticated) {
-        const localFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-        setFavorites(localFavorites);
-      }
+      setFavorites([]);
     } finally {
       setLoading(false);
     }
@@ -63,13 +85,7 @@ export default function Favorites() {
 
   const removeFavorite = async (propertyId: string) => {
     try {
-      if (isAuthenticated) {
-        await favoritesAPI.remove(propertyId);
-      } else {
-        const localFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-        const updatedFavorites = localFavorites.filter((fav: Property) => fav.id !== propertyId);
-        localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
-      }
+      await favoritesAPI.remove(propertyId);
       setFavorites(prev => prev.filter(fav => fav.id !== propertyId));
     } catch (error) {
       console.error('Error removing favorite:', error);
@@ -128,10 +144,10 @@ export default function Favorites() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {favorites.map((property) => (
               <div key={property.id} className="relative">
-                <PropertyCard property={property} />
+                <PropertyCard property={property} hideFavoriteButton={true} />
                 <button
                   onClick={() => removeFavorite(property.id)}
-                  className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-md hover:bg-red-50 transition-colors"
+                  className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-md hover:bg-red-50 transition-colors z-10"
                 >
                   <Trash2 className="w-4 h-4 text-red-500" />
                 </button>

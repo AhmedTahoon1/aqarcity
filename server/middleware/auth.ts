@@ -12,6 +12,7 @@ export interface AuthRequest extends Request {
 const getJwtSecret = () => {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
+    console.error('❌ JWT_SECRET is not defined');
     throw new Error('JWT_SECRET is not defined in environment variables');
   }
   return secret;
@@ -20,26 +21,45 @@ const getJwtSecret = () => {
 const getJwtRefreshSecret = () => {
   const secret = process.env.JWT_REFRESH_SECRET;
   if (!secret) {
+    console.error('❌ JWT_REFRESH_SECRET is not defined');
     throw new Error('JWT_REFRESH_SECRET is not defined in environment variables');
   }
   return secret;
 };
 
 export const generateTokens = (user: { id: string; email: string; role: string }) => {
-  const jwtSecret = getJwtSecret();
-  const jwtRefreshSecret = getJwtRefreshSecret();
-  const accessExpiresIn: string = (process.env.JWT_ACCESS_EXPIRES_IN || '15m') as string;
-  const refreshExpiresIn: string = (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as string;
-  
-  const accessToken = jwt.sign(user, jwtSecret, { 
-    expiresIn: accessExpiresIn
-  });
-  
-  const refreshToken = jwt.sign({ id: user.id }, jwtRefreshSecret, { 
-    expiresIn: refreshExpiresIn
-  });
-  
-  return { accessToken, refreshToken };
+  try {
+    const jwtSecret = getJwtSecret();
+    const jwtRefreshSecret = getJwtRefreshSecret();
+    const accessExpiresIn = process.env.JWT_ACCESS_EXPIRES_IN || '24h';
+    const refreshExpiresIn = process.env.JWT_REFRESH_EXPIRES_IN || '30d';
+    
+    const tokenPayload = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      iss: process.env.JWT_ISSUER || 'aqarcity.ae',
+      aud: process.env.JWT_AUDIENCE || 'aqarcity-users'
+    };
+    
+    const accessToken = jwt.sign(tokenPayload, jwtSecret, { 
+      expiresIn: accessExpiresIn
+    });
+    
+    const refreshToken = jwt.sign({ 
+      id: user.id,
+      iss: process.env.JWT_ISSUER || 'aqarcity.ae',
+      aud: process.env.JWT_AUDIENCE || 'aqarcity-users'
+    }, jwtRefreshSecret, { 
+      expiresIn: refreshExpiresIn
+    });
+    
+    console.log(`✅ Tokens generated for user: ${user.email}`);
+    return { accessToken, refreshToken };
+  } catch (error) {
+    console.error('❌ Token generation failed:', error);
+    throw error;
+  }
 };
 
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {

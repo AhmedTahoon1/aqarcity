@@ -38,9 +38,10 @@ interface Property {
 
 interface PropertyCardProps {
   property: Property;
+  hideFavoriteButton?: boolean;
 }
 
-export default function PropertyCard({ property }: PropertyCardProps) {
+export default function PropertyCard({ property, hideFavoriteButton = false }: PropertyCardProps) {
   const { t, i18n } = useTranslation();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const { addProperty, removeProperty, isInCompare, canAdd } = useCompareStore();
@@ -297,25 +298,49 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         
         {/* Action Buttons */}
         <div className="absolute top-3 right-3 flex flex-col space-y-2">
-          <FavoriteButton 
-            isFavorite={favorited}
-            onClick={handleFavoriteClick}
-          />
-          <motion.button
-            onClick={handleCompareClick}
-            className={`p-2 rounded-full backdrop-blur-sm transition-all duration-300 ${
-              inCompare 
-                ? 'bg-primary-600 text-white shadow-lg' 
-                : 'bg-white/90 text-gray-700 hover:bg-primary-50 hover:text-primary-600'
-            } ${!canAdd() && !inCompare ? 'opacity-50 cursor-not-allowed' : ''}`}
-            whileHover={canAdd() || inCompare ? { scale: 1.1 } : {}}
-            whileTap={canAdd() || inCompare ? { scale: 0.9 } : {}}
-            disabled={!canAdd() && !inCompare}
-            title={inCompare ? (isArabic ? 'إزالة من المقارنة' : 'Remove from compare') : (isArabic ? 'إضافة للمقارنة' : 'Add to compare')}
-          >
-            <GitCompare className="w-4 h-4" />
-          </motion.button>
+          {!hideFavoriteButton && (
+            <FavoriteButton 
+              isFavorite={favorited}
+              onClick={handleFavoriteClick}
+            />
+          )}
+          {!hideFavoriteButton && (
+            <motion.button
+              onClick={handleCompareClick}
+              className={`p-2 rounded-full backdrop-blur-sm transition-all duration-300 ${
+                inCompare 
+                  ? 'bg-primary-600 text-white shadow-lg' 
+                  : 'bg-white/90 text-gray-700 hover:bg-primary-50 hover:text-primary-600'
+              } ${!canAdd() && !inCompare ? 'opacity-50 cursor-not-allowed' : ''}`}
+              whileHover={canAdd() || inCompare ? { scale: 1.1 } : {}}
+              whileTap={canAdd() || inCompare ? { scale: 0.9 } : {}}
+              disabled={!canAdd() && !inCompare}
+              title={inCompare ? (isArabic ? 'إزالة من المقارنة' : 'Remove from compare') : (isArabic ? 'إضافة للمقارنة' : 'Add to compare')}
+            >
+              <GitCompare className="w-4 h-4" />
+            </motion.button>
+          )}
         </div>
+        
+        {/* Compare Button for Favorites Page */}
+        {hideFavoriteButton && (
+          <div className="absolute bottom-3 right-3">
+            <motion.button
+              onClick={handleCompareClick}
+              className={`p-2 rounded-full backdrop-blur-sm transition-all duration-300 ${
+                inCompare 
+                  ? 'bg-primary-600 text-white shadow-lg' 
+                  : 'bg-white/90 text-gray-700 hover:bg-primary-50 hover:text-primary-600'
+              } ${!canAdd() && !inCompare ? 'opacity-50 cursor-not-allowed' : ''}`}
+              whileHover={canAdd() || inCompare ? { scale: 1.1 } : {}}
+              whileTap={canAdd() || inCompare ? { scale: 0.9 } : {}}
+              disabled={!canAdd() && !inCompare}
+              title={inCompare ? (isArabic ? 'إزالة من المقارنة' : 'Remove from compare') : (isArabic ? 'إضافة للمقارنة' : 'Add to compare')}
+            >
+              <GitCompare className="w-4 h-4" />
+            </motion.button>
+          </div>
+        )}
       </div>
 
       <div className="p-4">
