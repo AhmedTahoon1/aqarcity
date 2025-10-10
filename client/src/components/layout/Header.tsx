@@ -57,6 +57,7 @@ export default function Header() {
     { href: '/about', label: t('nav.about') },
     { href: '/careers', label: t('nav.careers') },
     { href: '/contact', label: t('nav.contact') },
+    { href: '/mortgage-calculator', label: t('mortgage.title') },
   ];
 
   return (
@@ -128,7 +129,7 @@ export default function Header() {
                   setIsUserMenuOpen(false);
                 }}
                 className={`flex items-center space-x-1 rtl:space-x-reverse text-sm font-medium transition-colors hover:text-primary-600 cursor-pointer ${
-                ['/about', '/careers', '/contact'].includes(location) ? 'text-primary-600' : 'text-gray-700'
+                ['/about', '/careers', '/contact', '/mortgage-calculator'].includes(location) ? 'text-primary-600' : 'text-gray-700'
               }`}>
                 <span>{t('nav.info')}</span>
                 <ChevronDown className="w-4 h-4" />

@@ -145,12 +145,12 @@ export default function Properties() {
             {/* Location Filter */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">
-                الموقع
+                {t('property.location')}
               </label>
               <LocationSelect
                 value={filters.location || ''}
                 onChange={(locationId) => handleFilterChange('location', locationId || '')}
-                placeholder="اختر الموقع"
+                placeholder={isArabic ? 'اختر الموقع' : 'Select Location'}
               />
             </div>
 
@@ -208,14 +208,14 @@ export default function Properties() {
             {/* Bathrooms Filter */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">
-                {isArabic ? 'الحمامات' : 'Bathrooms'}
+                {t('filters.bathrooms')}
               </label>
               <select
                 value={filters.bathrooms || ''}
                 onChange={(e) => handleFilterChange('bathrooms', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
               >
-                <option value="">{isArabic ? 'أي عدد' : 'Any'}</option>
+                <option value="">{t('filters.anyBathrooms')}</option>
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -257,46 +257,46 @@ export default function Properties() {
             <div className="mt-4 p-3 bg-primary-50 rounded-lg border border-primary-200">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-primary-700">
-                  {isArabic ? 'الفلاتر المطبقة:' : 'Active Filters:'}
+                  {t('filters.activeFilters')}
                 </span>
                 <span className="text-xs text-primary-600">
-                  {Object.values(filters).filter(v => v !== '').length} {isArabic ? 'فلتر' : 'filters'}
+                  {Object.values(filters).filter(v => v !== '').length} {t('filters.filtersCount')}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {filters.location && (
                   <span className="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
-                    {isArabic ? 'الموقع' : 'Location'}: {filters.location}
+                    {t('property.location')}: {filters.location}
                   </span>
                 )}
                 {filters.type && (
                   <span className="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
-                    {isArabic ? 'النوع' : 'Type'}: {propertyTypes.find(t => t.value === filters.type)?.label}
+                    {t('property.type')}: {propertyTypes.find(t => t.value === filters.type)?.label}
                   </span>
                 )}
                 {filters.status && (
                   <span className="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
-                    {isArabic ? 'الحالة' : 'Status'}: {statusOptions.find(s => s.value === filters.status)?.label}
+                    {t('property.status')}: {statusOptions.find(s => s.value === filters.status)?.label}
                   </span>
                 )}
                 {filters.bedrooms && (
                   <span className="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
-                    {isArabic ? 'غرف النوم' : 'Bedrooms'}: {bedroomOptions.find(b => b.value === filters.bedrooms)?.label}
+                    {t('property.bedrooms')}: {bedroomOptions.find(b => b.value === filters.bedrooms)?.label}
                   </span>
                 )}
                 {filters.bathrooms && (
                   <span className="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
-                    {isArabic ? 'الحمامات' : 'Bathrooms'}: {filters.bathrooms}
+                    {t('property.bathrooms')}: {filters.bathrooms}
                   </span>
                 )}
                 {filters.minPrice && (
                   <span className="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
-                    {isArabic ? 'أقل سعر' : 'Min Price'}: {filters.minPrice}
+                    {t('filters.minPrice')}: {filters.minPrice}
                   </span>
                 )}
                 {filters.maxPrice && (
                   <span className="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
-                    {isArabic ? 'أعلى سعر' : 'Max Price'}: {filters.maxPrice}
+                    {t('filters.maxPrice')}: {filters.maxPrice}
                   </span>
                 )}
               </div>
@@ -321,7 +321,7 @@ export default function Properties() {
               <button
                 onClick={() => {
                   if (!hasActiveFilters && Object.keys(filters).length === 0) {
-                    alert(isArabic ? 'يرجى اختيار فلاتر أولاً قبل حفظ البحث' : 'Please select filters first before saving search');
+                    alert(t('search.selectFiltersFirst'));
                     return;
                   }
                   
@@ -338,7 +338,7 @@ export default function Properties() {
                 }`}
               >
                 <Bookmark className="w-4 h-4" />
-                <span>حفظ البحث</span>
+                <span>{t('search.saveSearch')}</span>
               </button>
               
               <div className="relative">
@@ -354,17 +354,10 @@ export default function Properties() {
                 {showTooltip && (
                   <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-10">
                     <div className="text-center">
-                      {isArabic ? (
-                        <>
-                          <p className="font-semibold mb-1">حفظ البحث</p>
-                          <p>احفظ معايير البحث الحالية واحصل على تنبيهات عند إضافة عقارات جديدة تطابق اهتماماتك</p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="font-semibold mb-1">Save Search</p>
-                          <p>Save your current search criteria and get notified when new properties matching your interests are added</p>
-                        </>
-                      )}
+                      <>
+                        <p className="font-semibold mb-1">{t('search.saveSearch')}</p>
+                        <p>{t('search.saveSearchDescription')}</p>
+                      </>
                     </div>
                     <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                   </div>

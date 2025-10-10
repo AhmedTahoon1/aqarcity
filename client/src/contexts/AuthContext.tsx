@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { authService, User } from '../lib/auth';
 import { favoritesAPI, usersAPI } from '../lib/api';
 import SearchDiscoveryModal from '../components/modals/SearchDiscoveryModal';
+import FavoritesSyncModal from '../components/modals/FavoritesSyncModal';
 
 interface AuthContextType {
   user: User | null;
@@ -13,6 +14,8 @@ interface AuthContextType {
   discoveredSearches: any[];
   showDiscoveryModal: boolean;
   setShowDiscoveryModal: (show: boolean) => void;
+  showFavoritesSyncModal: boolean;
+  setShowFavoritesSyncModal: (show: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,6 +37,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [discoveredSearches, setDiscoveredSearches] = useState<any[]>([]);
   const [showDiscoveryModal, setShowDiscoveryModal] = useState(false);
+  const [showFavoritesSyncModal, setShowFavoritesSyncModal] = useState(false);
+  const [localFavoritesCount, setLocalFavoritesCount] = useState(0);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -42,7 +47,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
           const userData = await authService.getCurrentUser();
           setUser(userData);
-          await syncLocalFavorites();
           await checkForGuestSearches(userData);
         } catch (error: any) {
           if (error.response?.status === 403 || error.response?.status === 401) {
@@ -59,8 +63,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     checkAuth();
   }, []);
+
+  // Check for local favorites when user logs in
+  useEffect(() => {
+    if (user) {
+      checkLocalFavorites();
+    }
+  }, [user]);
+
+  const checkLocalFavorites = () => {
+    const localFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    if (localFavorites.length > 0) {
+      setLocalFavoritesCount(localFavorites.length);
+      setShowFavoritesSyncModal(true);
+    }
+  };
+
+  const handleSyncAccept = async () => {
+    setShowFavoritesSyncModal(false);
+    await syncLocalFavorites();
+  };
+
+  const handleSyncDecline = () => {
+    setShowFavoritesSyncModal(false);
+    // Keep favorites in localStorage, don't sync to database
+  };
   
   const syncLocalFavorites = async () => {
+    // Only sync if user is authenticated
+    if (!user) return;
+    
     try {
       const localFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
       if (localFavorites.length > 0) {
@@ -69,14 +101,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             await favoritesAPI.add(property.id);
           } catch (error: any) {
             if (error.response?.status !== 400) {
-              throw error;
+              console.error('Error syncing favorite:', error);
             }
           }
         }
+        // Only remove localStorage after successful sync
         localStorage.removeItem('favorites');
       }
     } catch (error) {
-      localStorage.removeItem('favorites');
+      console.error('Error syncing favorites:', error);
+      // Don't remove localStorage on error to preserve data
     }
   };
 
@@ -135,7 +169,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     updateUserProfile,
     discoveredSearches,
     showDiscoveryModal,
-    setShowDiscoveryModal
+    setShowDiscoveryModal,
+    showFavoritesSyncModal,
+    setShowFavoritesSyncModal
   };
 
   return (
@@ -147,6 +183,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isOpen={showDiscoveryModal}
         onClose={() => setShowDiscoveryModal(false)}
         discoveredSearches={discoveredSearches}
+      />
+      
+      {/* Favorites Sync Modal */}
+      <FavoritesSyncModal
+        isOpen={showFavoritesSyncModal}
+        onClose={() => setShowFavoritesSyncModal(false)}
+        onAccept={handleSyncAccept}
+        onDecline={handleSyncDecline}
+        favoritesCount={localFavoritesCount}
       />
     </AuthContext.Provider>
   );

@@ -175,7 +175,7 @@ class AuthService {
     this.refreshToken = null;
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
-    localStorage.removeItem('favorites');
+    // Don't remove favorites - let users keep their guest favorites
     delete axios.defaults.headers.common['Authorization'];
   }
 

@@ -21,7 +21,10 @@ export const useAuth = () => {
         try {
           const userData = await authService.getCurrentUser();
           setUser(userData);
-          await syncLocalFavorites();
+          // Only sync favorites if user is authenticated
+          if (userData) {
+            await syncLocalFavorites();
+          }
         } catch (error: any) {
           if (error.response?.status === 403 || error.response?.status === 401) {
             authService.logout();
@@ -39,22 +42,37 @@ export const useAuth = () => {
   }, []);
   
   const syncLocalFavorites = async () => {
+    // Only sync if user is authenticated
+    if (!user) return;
+    
     try {
       const localFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
       if (localFavorites.length > 0) {
+        // Get existing database favorites
+        const response = await favoritesAPI.getAll();
+        const existingIds = response.data.map((item: any) => item.property.id);
+        
+        // Add only new favorites to database
         for (const property of localFavorites) {
-          try {
-            await favoritesAPI.add(property.id);
-          } catch (error: any) {
-            if (error.response?.status !== 400) {
-              throw error;
+          if (!existingIds.includes(property.id)) {
+            try {
+              await favoritesAPI.add(property.id);
+            } catch (error: any) {
+              if (error.response?.status !== 400) {
+                throw error;
+              }
             }
           }
         }
-        localStorage.removeItem('favorites');
+        
+        // Clear localStorage after successful sync only for authenticated users
+        if (user) {
+          localStorage.removeItem('favorites');
+        }
       }
     } catch (error) {
-      localStorage.removeItem('favorites');
+      console.error('Error syncing favorites:', error);
+      // Don't remove localStorage on error to preserve data
     }
   };
 

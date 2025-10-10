@@ -27,7 +27,7 @@ export const useFavorites = () => {
 
   const loadFavorites = async () => {
     try {
-      if (AUTH_ENABLED && isAuthenticated) {
+      if (isAuthenticated) {
         const response = await favoritesAPI.getAll();
         const favoriteIds = response.data.map((item: any) => item.property.id);
         setFavorites(favoriteIds);
@@ -47,14 +47,17 @@ export const useFavorites = () => {
 
   const addToFavorites = async (property: Property) => {
     try {
-      if (AUTH_ENABLED && isAuthenticated) {
+      if (isAuthenticated) {
         await favoritesAPI.add(property.id);
         setFavorites(prev => [...prev, property.id]);
       } else {
         const localFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-        const updatedFavorites = [...localFavorites, property];
-        localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
-        setFavorites(prev => [...prev, property.id]);
+        const isAlreadyFavorite = localFavorites.some((fav: Property) => fav.id === property.id);
+        if (!isAlreadyFavorite) {
+          const updatedFavorites = [...localFavorites, property];
+          localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+          setFavorites(prev => [...prev, property.id]);
+        }
       }
     } catch (error: any) {
       if (error.response?.status === 400) {
@@ -65,7 +68,7 @@ export const useFavorites = () => {
 
   const removeFromFavorites = async (propertyId: string) => {
     try {
-      if (AUTH_ENABLED && isAuthenticated) {
+      if (isAuthenticated) {
         await favoritesAPI.remove(propertyId);
         setFavorites(prev => prev.filter(id => id !== propertyId));
       } else {
@@ -75,7 +78,7 @@ export const useFavorites = () => {
         setFavorites(prev => prev.filter(id => id !== propertyId));
       }
     } catch (error) {
-      // Silently handle errors when auth is disabled
+      console.error('Error removing from favorites:', error);
     }
   };
 
@@ -84,15 +87,35 @@ export const useFavorites = () => {
   };
 
   const syncLocalToDatabase = async () => {
+    // Only sync if user is authenticated
     if (!isAuthenticated) return;
     
     try {
       const localFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-      for (const property of localFavorites) {
-        await favoritesAPI.add(property.id);
+      if (localFavorites.length > 0) {
+        // Get existing database favorites
+        const response = await favoritesAPI.getAll();
+        const existingIds = response.data.map((item: any) => item.property.id);
+        
+        // Add only new favorites to database
+        for (const property of localFavorites) {
+          if (!existingIds.includes(property.id)) {
+            try {
+              await favoritesAPI.add(property.id);
+            } catch (error: any) {
+              if (error.response?.status !== 400) {
+                throw error;
+              }
+            }
+          }
+        }
+        
+        // Clear localStorage after successful sync only if user is authenticated
+        if (isAuthenticated) {
+          localStorage.removeItem('favorites');
+        }
+        loadFavorites();
       }
-      localStorage.removeItem('favorites');
-      loadFavorites();
     } catch (error) {
       console.error('Error syncing favorites:', error);
     }

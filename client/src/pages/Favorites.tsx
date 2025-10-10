@@ -27,57 +27,48 @@ export default function Favorites() {
   const [loading, setLoading] = useState(true);
   const isArabic = i18n.language === 'ar';
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      window.location.href = '/login';
-      return;
-    }
-  }, [isAuthenticated, loading]);
 
-  // Don't render anything while checking auth or if not authenticated
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null; // Will redirect to login
-  }
 
   useEffect(() => {
-    if (!loading && isAuthenticated) {
-      loadFavorites();
-    }
-  }, [isAuthenticated, loading]);
+    loadFavorites();
+  }, [isAuthenticated]);
 
   const loadFavorites = async () => {
     setLoading(true);
     try {
-      const response = await favoritesAPI.getAll();
-      const favoriteProperties = response.data.map((item: any) => ({
-        id: item.property.id,
-        titleEn: item.property.titleEn,
-        titleAr: item.property.titleAr,
-        price: item.property.price,
-        currency: item.property.currency || 'AED',
-        location: item.property.location,
-        city: item.property.city,
-        status: item.property.status,
-        propertyType: item.property.propertyType,
-        bedrooms: item.property.bedrooms,
-        bathrooms: item.property.bathrooms,
-        areaSqft: item.property.areaSqft,
-        images: item.property.images || [],
-        isFeatured: item.property.isFeatured
-      }));
-      setFavorites(favoriteProperties);
+      if (isAuthenticated) {
+        const response = await favoritesAPI.getAll();
+        const favoriteProperties = response.data.map((item: any) => ({
+          id: item.property.id,
+          titleEn: item.property.titleEn,
+          titleAr: item.property.titleAr,
+          price: item.property.price,
+          currency: item.property.currency || 'AED',
+          location: item.property.location,
+          city: item.property.city,
+          status: item.property.status,
+          propertyType: item.property.propertyType,
+          bedrooms: item.property.bedrooms,
+          bathrooms: item.property.bathrooms,
+          areaSqft: item.property.areaSqft,
+          images: item.property.images || [],
+          isFeatured: item.property.isFeatured
+        }));
+        setFavorites(favoriteProperties);
+      } else {
+        // For guests, only use localStorage
+        const localFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+        setFavorites(localFavorites);
+      }
     } catch (error) {
       console.error('Error loading favorites:', error);
-      setFavorites([]);
+      // Only fallback to localStorage if user is authenticated but API failed
+      if (isAuthenticated) {
+        setFavorites([]);
+      } else {
+        const localFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+        setFavorites(localFavorites);
+      }
     } finally {
       setLoading(false);
     }
@@ -85,7 +76,13 @@ export default function Favorites() {
 
   const removeFavorite = async (propertyId: string) => {
     try {
-      await favoritesAPI.remove(propertyId);
+      if (isAuthenticated) {
+        await favoritesAPI.remove(propertyId);
+      } else {
+        const localFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+        const updatedFavorites = localFavorites.filter((fav: Property) => fav.id !== propertyId);
+        localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+      }
       setFavorites(prev => prev.filter(fav => fav.id !== propertyId));
     } catch (error) {
       console.error('Error removing favorite:', error);
@@ -116,11 +113,11 @@ export default function Favorites() {
           <div className="flex items-center space-x-3 rtl:space-x-reverse">
             <Heart className="w-8 h-8 text-red-500" />
             <h1 className="text-3xl font-bold text-gray-900">
-              {isArabic ? 'العقارات المفضلة' : 'Favorite Properties'}
+              {t('nav.favorites')}
             </h1>
           </div>
           <div className="text-sm text-gray-500">
-            {favorites.length} {isArabic ? 'عقار' : 'properties'}
+            {favorites.length} {t('property.properties')}
           </div>
         </div>
 
@@ -128,22 +125,19 @@ export default function Favorites() {
           <div className="text-center py-16">
             <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {isArabic ? 'لا توجد عقارات مفضلة' : 'No favorite properties'}
+              {t('favorites.noFavorites')}
             </h3>
             <p className="text-gray-500 mb-6">
-              {isArabic 
-                ? 'ابدأ بإضافة العقارات التي تعجبك إلى المفضلة'
-                : 'Start adding properties you like to your favorites'
-              }
+              {t('favorites.startAdding')}
             </p>
             <a href="/properties" className="btn btn-primary">
-              {isArabic ? 'تصفح العقارات' : 'Browse Properties'}
+              {t('favorites.browseProperties')}
             </a>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {favorites.map((property) => (
-              <div key={property.id} className="relative">
+            {favorites.map((property, index) => (
+              <div key={`favorite-${property.id}-${index}`} className="relative">
                 <PropertyCard property={property} hideFavoriteButton={true} />
                 <button
                   onClick={() => removeFavorite(property.id)}

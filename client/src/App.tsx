@@ -31,6 +31,11 @@ const About = lazy(() => import('@/pages/About'));
 const Contact = lazy(() => import('@/pages/Contact'));
 const Compare = lazy(() => import('@/pages/Compare'));
 const VerifySearch = lazy(() => import('@/pages/VerifySearch'));
+const MortgageCalculator = lazy(() => import('@/pages/MortgageCalculator'));
+const PrivacyPolicy = lazy(() => import('@/pages/legal/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('@/pages/legal/TermsOfService'));
+const Disclaimer = lazy(() => import('@/pages/legal/Disclaimer'));
+const CookiePolicy = lazy(() => import('@/pages/legal/CookiePolicy'));
 
 function App() {
   const { i18n } = useTranslation();
@@ -64,9 +69,7 @@ function App() {
               <Route path="/profile">
                 <ProtectedRoute><Profile /></ProtectedRoute>
               </Route>
-              <Route path="/favorites">
-                <ProtectedRoute><Favorites /></ProtectedRoute>
-              </Route>
+              <Route path="/favorites" component={Favorites} />
               <Route path="/notifications">
                 <ProtectedRoute><Notifications /></ProtectedRoute>
               </Route>
@@ -77,6 +80,11 @@ function App() {
               <Route path="/contact" component={Contact} />
               <Route path="/compare" component={Compare} />
               <Route path="/verify-search/:token" component={VerifySearch} />
+              <Route path="/mortgage-calculator" component={MortgageCalculator} />
+              <Route path="/privacy-policy" component={PrivacyPolicy} />
+              <Route path="/terms-of-service" component={TermsOfService} />
+              <Route path="/disclaimer" component={Disclaimer} />
+              <Route path="/cookie-policy" component={CookiePolicy} />
             </Suspense>
           </main>
           <CompareBar />

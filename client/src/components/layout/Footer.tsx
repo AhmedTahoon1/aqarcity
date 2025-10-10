@@ -16,13 +16,13 @@ export default function Footer() {
     services: [
       { href: '/properties', label: t('nav.properties') },
       { href: '/agents', label: t('nav.agents') },
-      { href: '/mortgage', label: t('footer.mortgage') },
+      { href: '/mortgage-calculator', label: t('footer.mortgage') },
       { href: '/investment', label: t('footer.investment') },
     ],
     legal: [
-      { href: '/privacy', label: t('footer.privacy') },
-      { href: '/terms', label: t('footer.terms') },
-      { href: '/cookies', label: t('footer.cookies') },
+      { href: '/privacy-policy', label: t('footer.privacy') },
+      { href: '/terms-of-service', label: t('footer.terms') },
+      { href: '/cookie-policy', label: t('footer.cookies') },
       { href: '/disclaimer', label: t('footer.disclaimer') },
     ]
   };
@@ -72,7 +72,7 @@ export default function Footer() {
               {footerLinks.company.map((link, index) => (
                 <li key={index}>
                   <Link href={link.href}>
-                    <span className="text-gray-300 hover:text-white transition-colors">
+                    <span className="text-gray-300 hover:text-white transition-colors cursor-pointer">
                       {link.label}
                     </span>
                   </Link>
@@ -88,7 +88,7 @@ export default function Footer() {
               {footerLinks.services.map((link, index) => (
                 <li key={index}>
                   <Link href={link.href}>
-                    <span className="text-gray-300 hover:text-white transition-colors">
+                    <span className="text-gray-300 hover:text-white transition-colors cursor-pointer">
                       {link.label}
                     </span>
                   </Link>
@@ -104,7 +104,7 @@ export default function Footer() {
               {footerLinks.legal.map((link, index) => (
                 <li key={index}>
                   <Link href={link.href}>
-                    <span className="text-gray-300 hover:text-white transition-colors">
+                    <span className="text-gray-300 hover:text-white transition-colors cursor-pointer">
                       {link.label}
                     </span>
                   </Link>
