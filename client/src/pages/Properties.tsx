@@ -5,8 +5,10 @@ import { propertiesAPI } from '@/lib/api';
 import PropertyCard from '@/components/property/PropertyCard';
 import { PropertyListSkeleton } from '@/components/skeletons';
 import { StaggeredList, AnimatedContainer } from '@/components/animations';
-import { Grid, List, ChevronLeft, ChevronRight, AlertCircle, X } from 'lucide-react';
+import { Grid, List, ChevronLeft, ChevronRight, AlertCircle, X, Bookmark, Info } from 'lucide-react';
 import { useLocation } from 'wouter';
+import SaveSearchModal from '@/components/modals/SaveSearchModal';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 export default function Properties() {
   const { t, i18n } = useTranslation();
@@ -15,6 +17,9 @@ export default function Properties() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('newest');
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const { isAuthenticated } = useAuthContext();
   const isArabic = i18n.language === 'ar';
 
   const cities = [
@@ -215,18 +220,74 @@ export default function Properties() {
             </div>
           </div>
 
-          {/* Clear Filters Button */}
-          {hasActiveFilters && (
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={clearFilters}
-                className="flex items-center space-x-2 rtl:space-x-reverse px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-              >
-                <X className="w-4 h-4" />
-                <span>{t('filters.clearFilters')}</span>
-              </button>
+          {/* Action Buttons */}
+          <div className="mt-4 flex justify-between items-center">
+            <div className="flex items-center space-x-2">
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="flex items-center space-x-2 rtl:space-x-reverse px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                  <span>{t('filters.clearFilters')}</span>
+                </button>
+              )}
             </div>
-          )}
+            
+            <div className="flex items-center space-x-2 rtl:space-x-reverse">
+              <button
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    alert(isArabic ? 'يجب تسجيل الدخول أولاً لحفظ البحث' : 'Please login first to save search');
+                    return;
+                  }
+                  if (!hasActiveFilters && Object.keys(filters).length === 0) {
+                    alert(isArabic ? 'يرجى اختيار فلاتر أولاً قبل حفظ البحث' : 'Please select filters first before saving search');
+                    return;
+                  }
+                  setShowSaveModal(true);
+                }}
+                className={`flex items-center space-x-2 rtl:space-x-reverse px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  hasActiveFilters || Object.keys(filters).length > 0
+                    ? 'text-white bg-primary-600 hover:bg-primary-700'
+                    : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
+                }`}
+              >
+                <Bookmark className="w-4 h-4" />
+                <span>حفظ البحث</span>
+              </button>
+              
+              <div className="relative">
+                <button
+                  onMouseEnter={() => setShowTooltip(true)}
+                  onMouseLeave={() => setShowTooltip(false)}
+                  onClick={() => setShowTooltip(!showTooltip)}
+                  className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <Info className="w-4 h-4" />
+                </button>
+                
+                {showTooltip && (
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-10">
+                    <div className="text-center">
+                      {isArabic ? (
+                        <>
+                          <p className="font-semibold mb-1">حفظ البحث</p>
+                          <p>احفظ معايير البحث الحالية واحصل على تنبيهات عند إضافة عقارات جديدة تطابق اهتماماتك</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="font-semibold mb-1">Save Search</p>
+                          <p>Save your current search criteria and get notified when new properties matching your interests are added</p>
+                        </>
+                      )}
+                    </div>
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* View Toggle & Sort */}
@@ -378,6 +439,13 @@ export default function Properties() {
             </div>
           </div>
         )}
+
+        {/* Save Search Modal */}
+        <SaveSearchModal
+          isOpen={showSaveModal}
+          onClose={() => setShowSaveModal(false)}
+          searchCriteria={filters}
+        />
       </div>
     </div>
   );

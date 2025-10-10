@@ -51,6 +51,7 @@ import analyticsRoutes from './routes/analytics.js';
 import careersRoutes from './routes/careers.js';
 import notificationsRoutes from './routes/notifications.js';
 import locationsRoutes from './routes/locations.js';
+import savedSearchesRoutes from './routes/saved-searches.js';
 
 // API routes
 app.use('/api/v1/auth', authRoutes);
@@ -63,6 +64,7 @@ app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/careers', careersRoutes);
 app.use('/api/v1/notifications', notificationsRoutes);
 app.use('/api/v1/locations', locationsRoutes);
+app.use('/api/v1/saved-searches', savedSearchesRoutes);
 
 // Serve uploaded files
 app.use('/uploads', express.static('uploads'));

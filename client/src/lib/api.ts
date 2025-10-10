@@ -103,3 +103,10 @@ export const analyticsAPI = {
   getProperties: () => api.get('/analytics/properties'),
   getMarket: () => api.get('/analytics/market'),
 };
+
+export const savedSearchesAPI = {
+  getAll: () => api.get('/saved-searches'),
+  create: (data: any) => api.post('/saved-searches', data),
+  update: (id: string, data: any) => api.put(`/saved-searches/${id}`, data),
+  delete: (id: string) => api.delete(`/saved-searches/${id}`),
+};

@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, decimal, integer, boolean, timestamp, json, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, decimal, integer, boolean, timestamp, json, pgEnum, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Enums
@@ -13,6 +13,7 @@ export const jobStatusEnum = pgEnum('job_status', ['active', 'closed']);
 export const applicationStatusEnum = pgEnum('application_status', ['pending', 'reviewed', 'accepted', 'rejected']);
 export const notificationTypeEnum = pgEnum('notification_type', ['new_property', 'price_drop', 'new_feature', 'system', 'marketing']);
 export const notificationPriorityEnum = pgEnum('notification_priority', ['low', 'medium', 'high', 'urgent']);
+export const alertFrequencyEnum = pgEnum('alert_frequency', ['instant', 'daily', 'weekly']);
 
 // Users Table
 export const users = pgTable('users', {
@@ -26,6 +27,11 @@ export const users = pgTable('users', {
   languagePreference: varchar('language_preference', { length: 2 }).default('en'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    emailIdx: index('users_email_idx').on(table.email),
+    roleIdx: index('users_role_idx').on(table.role),
+  };
 });
 
 // Developers Table
@@ -94,6 +100,16 @@ export const properties = pgTable('properties', {
   viewsCount: integer('views_count').default(0),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    cityIdx: index('properties_city_idx').on(table.city),
+    propertyTypeIdx: index('properties_type_idx').on(table.propertyType),
+    statusIdx: index('properties_status_idx').on(table.status),
+    priceIdx: index('properties_price_idx').on(table.price),
+    agentIdx: index('properties_agent_idx').on(table.agentId),
+    featuredIdx: index('properties_featured_idx').on(table.isFeatured),
+    createdAtIdx: index('properties_created_at_idx').on(table.createdAt),
+  };
 });
 
 // Favorites Table
@@ -102,6 +118,11 @@ export const favorites = pgTable('favorites', {
   userId: uuid('user_id').references(() => users.id).notNull(),
   propertyId: uuid('property_id').references(() => properties.id).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    userIdx: index('favorites_user_idx').on(table.userId),
+    propertyIdx: index('favorites_property_idx').on(table.propertyId),
+  };
 });
 
 // Inquiries Table
@@ -115,6 +136,12 @@ export const inquiries = pgTable('inquiries', {
   message: text('message').notNull(),
   status: inquiryStatusEnum('status').default('new'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    propertyIdx: index('inquiries_property_idx').on(table.propertyId),
+    userIdx: index('inquiries_user_idx').on(table.userId),
+    statusIdx: index('inquiries_status_idx').on(table.status),
+  };
 });
 
 // Chat Messages Table
@@ -195,6 +222,49 @@ export const notifications = pgTable('notifications', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// Locations Table
+export const locations = pgTable('locations', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  nameEn: varchar('name_en', { length: 255 }).notNull(),
+  nameAr: varchar('name_ar', { length: 255 }).notNull(),
+  city: varchar('city', { length: 100 }).notNull(),
+  isActive: boolean('is_active').default(true),
+  displayOrder: integer('display_order').default(0),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Saved Searches Table
+export const savedSearches = pgTable('saved_searches', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id).notNull(),
+  name: varchar('name', { length: 255 }).notNull(),
+  searchCriteria: json('search_criteria').$type<{
+    city?: string;
+    area?: string;
+    type?: string;
+    status?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    bedrooms?: number;
+    bathrooms?: number;
+    minArea?: number;
+    maxArea?: number;
+    coordinates?: { lat: number; lng: number }[];
+  }>().notNull(),
+  alertsEnabled: boolean('alerts_enabled').default(true),
+  alertFrequency: alertFrequencyEnum('alert_frequency').default('instant'),
+  lastAlertSent: timestamp('last_alert_sent'),
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    userIdx: index('saved_searches_user_idx').on(table.userId),
+    activeIdx: index('saved_searches_active_idx').on(table.isActive),
+  };
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   agent: one(agents, { fields: [users.id], references: [agents.userId] }),
@@ -202,6 +272,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   inquiries: many(inquiries),
   chatMessages: many(chatMessages),
   reviews: many(reviews),
+  savedSearches: many(savedSearches),
 }));
 
 export const agentsRelations = relations(agents, ({ one, many }) => ({
@@ -252,17 +323,9 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   user: one(users, { fields: [notifications.userId], references: [users.id] }),
 }));
 
-// Locations Table
-export const locations = pgTable('locations', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  nameEn: varchar('name_en', { length: 255 }).notNull(),
-  nameAr: varchar('name_ar', { length: 255 }).notNull(),
-  city: varchar('city', { length: 100 }).notNull(),
-  isActive: boolean('is_active').default(true),
-  displayOrder: integer('display_order').default(0),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+export const savedSearchesRelations = relations(savedSearches, ({ one }) => ({
+  user: one(users, { fields: [savedSearches.userId], references: [users.id] }),
+}));
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -289,3 +352,5 @@ export type Notification = typeof notifications.$inferSelect;
 export type NewNotification = typeof notifications.$inferInsert;
 export type Location = typeof locations.$inferSelect;
 export type NewLocation = typeof locations.$inferInsert;
+export type SavedSearch = typeof savedSearches.$inferSelect;
+export type NewSavedSearch = typeof savedSearches.$inferInsert;

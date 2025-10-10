@@ -70,12 +70,12 @@ router.get('/', async (req, res) => {
     }
 
     // Get total count for pagination
-    let countQuery = db.select({ count: properties.id }).from(properties);
+    let countQuery = db.select({ count: sql`count(*)` }).from(properties);
     if (conditions.length > 0) {
       countQuery = countQuery.where(and(...conditions));
     }
     const totalResult = await countQuery;
-    const total = totalResult.length;
+    const total = Number(totalResult[0].count);
 
     // Apply pagination
     const offset = (Number(page) - 1) * Number(limit);
