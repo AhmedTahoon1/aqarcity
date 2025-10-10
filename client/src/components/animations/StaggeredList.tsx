@@ -23,6 +23,8 @@ const item = {
 };
 
 export default function StaggeredList({ children, className = '', staggerDelay = 0.1 }: StaggeredListProps) {
+  const childrenArray = Array.isArray(children) ? children : [];
+  
   return (
     <motion.div
       className={className}
@@ -38,7 +40,7 @@ export default function StaggeredList({ children, className = '', staggerDelay =
       initial="hidden"
       animate="show"
     >
-      {children.map((child, index) => (
+      {childrenArray.map((child, index) => (
         <motion.div key={index} variants={item}>
           {child}
         </motion.div>

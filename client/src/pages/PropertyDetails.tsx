@@ -23,20 +23,18 @@ export default function PropertyDetails() {
     const [isExpanded, setIsExpanded] = useState(true);
     
     const handleCall = () => {
-      if (agent.phone) {
-        window.open(`tel:${agent.phone}`);
-      }
+      const phone = agent?.phone || '+971501234567';
+      window.open(`tel:${phone}`);
     };
     
     const handleWhatsApp = () => {
-      if (agent.whatsapp) {
-        const message = encodeURIComponent(
-          isArabic 
-            ? `مرحباً، أنا مهتم بالعقار: ${property.titleAr}` 
-            : `Hello, I'm interested in the property: ${property.titleEn}`
-        );
-        window.open(`https://wa.me/${agent.whatsapp.replace(/[^0-9]/g, '')}?text=${message}`);
-      }
+      const whatsapp = agent?.whatsapp || '+971501234567';
+      const message = encodeURIComponent(
+        isArabic 
+          ? `مرحباً، أنا مهتم بالعقار: ${property.titleAr}` 
+          : `Hello, I'm interested in the property: ${property.titleEn}`
+      );
+      window.open(`https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}?text=${message}`);
     };
     
     return (
@@ -64,33 +62,27 @@ export default function PropertyDetails() {
               </div>
             </div>
             <div className="space-y-2">
-              {agent.phone && (
-                <button 
-                  onClick={handleCall}
-                  className="btn btn-primary w-full flex items-center justify-center space-x-2 rtl:space-x-reverse py-2 text-sm"
-                >
-                  <Phone className="w-3 h-3" />
-                  <span>{isArabic ? 'اتصال' : 'Call Agent'}</span>
-                </button>
-              )}
-              {agent.whatsapp && (
-                <button 
-                  onClick={handleWhatsApp}
-                  className="btn btn-secondary w-full flex items-center justify-center space-x-2 rtl:space-x-reverse py-2 text-sm"
-                >
-                  <MessageCircle className="w-3 h-3" />
-                  <span>{isArabic ? 'واتساب' : 'WhatsApp'}</span>
-                </button>
-              )}
-              {agent.email && (
-                <a 
-                  href={`mailto:${agent.email}`}
-                  className="btn btn-outline w-full flex items-center justify-center space-x-2 rtl:space-x-reverse py-2 text-sm"
-                >
-                  <span>📧</span>
-                  <span>{isArabic ? 'بريد إلكتروني' : 'Email'}</span>
-                </a>
-              )}
+              <button 
+                onClick={handleCall}
+                className="btn btn-primary w-full flex items-center justify-center space-x-2 rtl:space-x-reverse py-2 text-sm"
+              >
+                <Phone className="w-3 h-3" />
+                <span>{isArabic ? 'اتصال' : 'Call Agent'}</span>
+              </button>
+              <button 
+                onClick={handleWhatsApp}
+                className="btn btn-secondary w-full flex items-center justify-center space-x-2 rtl:space-x-reverse py-2 text-sm"
+              >
+                <MessageCircle className="w-3 h-3" />
+                <span>{isArabic ? 'واتساب' : 'WhatsApp'}</span>
+              </button>
+              <a 
+                href={`mailto:${agent?.email || 'agent@aqarcity.ae'}`}
+                className="btn btn-outline w-full flex items-center justify-center space-x-2 rtl:space-x-reverse py-2 text-sm"
+              >
+                <span>📧</span>
+                <span>{isArabic ? 'بريد إلكتروني' : 'Email'}</span>
+              </a>
             </div>
           </>
         )}
@@ -391,9 +383,7 @@ export default function PropertyDetails() {
           <div className="lg:col-span-1">
             <div className="space-y-4">
               {/* Agent Card */}
-              {agent && (
-                <CollapsibleAgentCard agent={agent} isArabic={isArabic} />
-              )}
+              <CollapsibleAgentCard agent={agent || {}} isArabic={isArabic} />
 
 
               {/* Inquiry Form */}

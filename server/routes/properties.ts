@@ -3,15 +3,19 @@ import { db } from '../../db';
 import { properties, agents, developers } from '../../shared/schema';
 import { eq, and, gte, lte, ilike, desc, asc, sql } from 'drizzle-orm';
 import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
+import { transformPropertyResult } from '../utils/property-transformer';
 
 const router = express.Router();
 
 // Get all properties with filters
 router.get('/', async (req, res) => {
   try {
+    console.log('Properties API - Received query:', req.query);
+    
     const {
       city,
       area,
+      location,
       type,
       status,
       minPrice,
@@ -38,8 +42,18 @@ router.get('/', async (req, res) => {
     // Apply filters
     const conditions = [];
     
-    if (city) conditions.push(ilike(properties.city, `%${city}%`));
-    if (area) conditions.push(ilike(properties.areaName, `%${area}%`));
+    // Handle location filtering - simplified approach
+    if (location) {
+      console.log('Filtering by location:', location);
+      // Simple location filtering by treating location as city name
+      conditions.push(
+        sql`(${ilike(properties.city, `%${location}%`)} OR ${ilike(properties.areaName, `%${location}%`)})`
+      );
+    }
+    
+    // Legacy city/area filters (for backward compatibility)
+    if (city && !location) conditions.push(ilike(properties.city, `%${city}%`));
+    if (area && !location) conditions.push(ilike(properties.areaName, `%${area}%`));
     if (type) conditions.push(eq(properties.propertyType, type as any));
     if (status) conditions.push(eq(properties.status, status as any));
     if (minPrice) conditions.push(gte(properties.price, minPrice.toString()));
@@ -107,7 +121,12 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Properties fetch error:', error);
-    res.status(500).json({ error: 'Failed to fetch properties' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      error: 'Failed to fetch properties',
+      details: error.message,
+      query: req.query
+    });
   }
 });
 
@@ -148,9 +167,12 @@ router.post('/', authenticateToken, requireRole(['agent', 'admin', 'super_admin'
   try {
     const propertyData = req.body;
     
+    // Allow flexible property creation
     const newProperty = await db.insert(properties).values({
       ...propertyData,
-      agentId: propertyData.agentId || req.user!.id
+      // agentId and developerId are optional - can be null
+      agentId: propertyData.agentId || null,
+      developerId: propertyData.developerId || null
     }).returning();
 
     res.status(201).json({

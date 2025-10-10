@@ -14,6 +14,9 @@
     "db:push": "drizzle-kit push:pg",
     "db:migrate": "tsx drizzle/migrate.ts",
     "db:seed": "tsx drizzle/seed.ts",
+    "db:seed-properties": "tsx drizzle/seed-simple-properties.ts",
+    "db:add-agent": "tsx drizzle/add-default-agent.ts",
+    "db:update-agents": "tsx drizzle/update-agents-contact.ts",
     "start": "node dist/server/index.js"
   },
   "dependencies": {

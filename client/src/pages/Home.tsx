@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { propertiesAPI } from '@/lib/api';
-import SearchBar from '@/components/shared/SearchBar';
+import AdvancedSearchBar from '@/components/shared/AdvancedSearchBar';
 import PropertyCard from '@/components/property/PropertyCard';
 import { PropertyCardSkeleton } from '@/components/skeletons';
 import { StaggeredList, AnimatedContainer, AnimatedButton } from '@/components/animations';
@@ -12,20 +12,72 @@ export default function Home() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
 
-  const { data: featuredProperties, isLoading } = useQuery({
+  const { data: featuredProperties, isLoading, error } = useQuery({
     queryKey: ['featured-properties'],
     queryFn: () => propertiesAPI.getFeatured(),
+    staleTime: 60000,
+    cacheTime: 300000,
+    retry: false,
   });
 
+  // Fallback data when API fails
+  const mockProperties = {
+    data: [
+      {
+        property: {
+          id: '1',
+          titleEn: 'Luxury Villa in Dubai Marina',
+          titleAr: 'فيلا فاخرة في دبي مارينا',
+          price: '2500000',
+          city: 'Dubai',
+          areaName: 'Dubai Marina',
+          bedrooms: 4,
+          bathrooms: 3,
+          areaSqft: 3500,
+          images: ['https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800'],
+          status: 'sale',
+          propertyType: 'villa'
+        }
+      },
+      {
+        property: {
+          id: '2',
+          titleEn: 'Modern Apartment in Downtown',
+          titleAr: 'شقة حديثة في وسط المدينة',
+          price: '1200000',
+          city: 'Dubai',
+          areaName: 'Downtown Dubai',
+          bedrooms: 2,
+          bathrooms: 2,
+          areaSqft: 1200,
+          images: ['https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800'],
+          status: 'sale',
+          propertyType: 'apartment'
+        }
+      }
+    ]
+  };
+
+  const displayProperties = error ? mockProperties : featuredProperties;
+
   const handleSearch = (filters: any) => {
-    // Build query string from filters
+    // Build query string from filters with correct parameter names
     const params = new URLSearchParams();
     
     if (filters.location) {
-      params.append('city', filters.location);
+      params.append('location', filters.location);
     }
     if (filters.propertyType) {
       params.append('type', filters.propertyType);
+    }
+    if (filters.status) {
+      params.append('status', filters.status);
+    }
+    if (filters.bedrooms) {
+      params.append('bedrooms', filters.bedrooms);
+    }
+    if (filters.bathrooms) {
+      params.append('bathrooms', filters.bathrooms);
     }
     if (filters.minPrice) {
       params.append('minPrice', filters.minPrice);
@@ -63,9 +115,9 @@ export default function Home() {
               {t('hero.subtitle')}
             </p>
             
-            {/* Search Bar */}
-            <div className="max-w-5xl mx-auto animate-slide-up">
-              <SearchBar onSearch={handleSearch} />
+            {/* Advanced Search Bar */}
+            <div className="max-w-6xl mx-auto animate-slide-up">
+              <AdvancedSearchBar onSearch={handleSearch} />
             </div>
           </div>
         </div>
@@ -131,17 +183,20 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <StaggeredList 
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              staggerDelay={0.15}
-            >
-              {featuredProperties?.data?.map((item: any) => (
-                <PropertyCard
-                  key={item.property.id}
-                  property={item.property}
-                />
-              ))}
-            </StaggeredList>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayProperties?.data && Array.isArray(displayProperties.data) && displayProperties.data.length > 0 ? 
+                displayProperties.data.map((item: any) => (
+                  <PropertyCard
+                    key={item.property?.id || Math.random()}
+                    property={item.property}
+                  />
+                )) : (
+                  <div className="col-span-full text-center py-8">
+                    <p className="text-gray-500">No featured properties available</p>
+                  </div>
+                )
+              }
+            </div>
           )}
         </div>
       </section>

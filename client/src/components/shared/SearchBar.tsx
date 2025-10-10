@@ -19,10 +19,10 @@ export default function SearchBar({ onSearch, className = '' }: SearchBarProps) 
     maxPrice: '',
   });
 
-  // Fetch locations from database
+  // Fetch locations with properties only
   const { data: locationsData, isLoading: locationsLoading } = useQuery({
-    queryKey: ['locations'],
-    queryFn: () => locationsAPI.getAll(),
+    queryKey: ['locations-with-properties'],
+    queryFn: () => locationsAPI.getWithProperties(),
   });
 
   if (locationsLoading) {
@@ -31,7 +31,14 @@ export default function SearchBar({ onSearch, className = '' }: SearchBarProps) 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch(filters);
+    // Map the filter names to match the expected API parameters
+    const mappedFilters = {
+      location: filters.location,
+      type: filters.propertyType,
+      minPrice: filters.minPrice,
+      maxPrice: filters.maxPrice
+    };
+    onSearch(mappedFilters);
   };
 
   const propertyTypes = [

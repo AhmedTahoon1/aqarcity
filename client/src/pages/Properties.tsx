@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { propertiesAPI } from '@/lib/api';
+import { useDebounce } from '@/hooks/useDebounce';
 import PropertyCard from '@/components/property/PropertyCard';
 import { PropertyListSkeleton } from '@/components/skeletons';
 import { StaggeredList, AnimatedContainer } from '@/components/animations';
@@ -10,6 +11,7 @@ import { useLocation } from 'wouter';
 import SaveSearchModal from '@/components/modals/SaveSearchModal';
 import GuestSaveSearchModal from '@/components/modals/GuestSaveSearchModal';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { LocationSelect } from '@/components/ui/LocationSelect';
 
 export default function Properties() {
   const { t, i18n } = useTranslation();
@@ -24,13 +26,7 @@ export default function Properties() {
   const { isAuthenticated } = useAuthContext();
   const isArabic = i18n.language === 'ar';
 
-  const cities = [
-    { value: 'Dubai', label: isArabic ? 'دبي' : 'Dubai' },
-    { value: 'Abu Dhabi', label: isArabic ? 'أبو ظبي' : 'Abu Dhabi' },
-    { value: 'Sharjah', label: isArabic ? 'الشارقة' : 'Sharjah' },
-    { value: 'Ajman', label: isArabic ? 'عجمان' : 'Ajman' },
-    { value: 'Ras Al Khaimah', label: isArabic ? 'رأس الخيمة' : 'Ras Al Khaimah' },
-  ];
+
 
   const propertyTypes = [
     { value: 'villa', label: t('filters.villa') },
@@ -57,21 +53,29 @@ export default function Properties() {
     const params = new URLSearchParams(window.location.search);
     const urlFilters: any = {};
     
+    // Read all possible parameters from URL
+    if (params.get('location')) urlFilters.location = params.get('location');
     if (params.get('city')) urlFilters.city = params.get('city');
     if (params.get('type')) urlFilters.type = params.get('type');
     if (params.get('status')) urlFilters.status = params.get('status');
+    if (params.get('bedrooms')) urlFilters.bedrooms = params.get('bedrooms');
+    if (params.get('bathrooms')) urlFilters.bathrooms = params.get('bathrooms');
     if (params.get('minPrice')) urlFilters.minPrice = params.get('minPrice');
     if (params.get('maxPrice')) urlFilters.maxPrice = params.get('maxPrice');
-    if (params.get('bedrooms')) urlFilters.bedrooms = params.get('bedrooms');
     
     if (Object.keys(urlFilters).length > 0) {
       setFilters(urlFilters);
     }
   }, [location]);
 
+  // Debounce filters to reduce server requests
+  const debouncedFilters = useDebounce(filters, 500);
+  
   const { data: propertiesData, isLoading, error } = useQuery({
-    queryKey: ['properties', filters, currentPage, sortBy],
-    queryFn: () => propertiesAPI.getAll({ ...filters, page: currentPage, limit: 12, sort: sortBy }),
+    queryKey: ['properties', debouncedFilters, currentPage, sortBy],
+    queryFn: () => propertiesAPI.getAll({ ...debouncedFilters, page: currentPage, limit: 12, sort: sortBy }),
+    staleTime: 30000, // Cache for 30 seconds
+    cacheTime: 300000, // Keep in cache for 5 minutes
   });
 
   const processedProperties = useMemo(() => {
@@ -90,11 +94,24 @@ export default function Properties() {
     
     setFilters(newFilters);
     setCurrentPage(1);
+    
+    // Update URL to reflect current filters
+    const params = new URLSearchParams();
+    Object.entries(newFilters).forEach(([k, v]) => {
+      if (v && v !== '') {
+        params.append(k, v);
+      }
+    });
+    
+    const newUrl = params.toString() ? `/properties?${params.toString()}` : '/properties';
+    window.history.replaceState({}, '', newUrl);
   };
 
   const clearFilters = () => {
     setFilters({});
     setCurrentPage(1);
+    // Clear URL parameters
+    window.history.replaceState({}, '', '/properties');
   };
 
   const handlePageChange = (page: number) => {
@@ -125,21 +142,16 @@ export default function Properties() {
         {/* Horizontal Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {/* City Filter */}
+            {/* Location Filter */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">
-                {t('filters.city')}
+                الموقع
               </label>
-              <select
-                value={filters.city || ''}
-                onChange={(e) => handleFilterChange('city', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
-              >
-                <option value="">{t('filters.allCities')}</option>
-                {cities.map(city => (
-                  <option key={city.value} value={city.value}>{city.label}</option>
-                ))}
-              </select>
+              <LocationSelect
+                value={filters.location || ''}
+                onChange={(locationId) => handleFilterChange('location', locationId || '')}
+                placeholder="اختر الموقع"
+              />
             </div>
 
             {/* Property Type Filter */}
@@ -193,6 +205,24 @@ export default function Properties() {
               </select>
             </div>
 
+            {/* Bathrooms Filter */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                {isArabic ? 'الحمامات' : 'Bathrooms'}
+              </label>
+              <select
+                value={filters.bathrooms || ''}
+                onChange={(e) => handleFilterChange('bathrooms', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+              >
+                <option value="">{isArabic ? 'أي عدد' : 'Any'}</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4+</option>
+              </select>
+            </div>
+
             {/* Min Price */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">
@@ -221,6 +251,57 @@ export default function Properties() {
               />
             </div>
           </div>
+
+          {/* Active Filters Display */}
+          {hasActiveFilters && (
+            <div className="mt-4 p-3 bg-primary-50 rounded-lg border border-primary-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-primary-700">
+                  {isArabic ? 'الفلاتر المطبقة:' : 'Active Filters:'}
+                </span>
+                <span className="text-xs text-primary-600">
+                  {Object.values(filters).filter(v => v !== '').length} {isArabic ? 'فلتر' : 'filters'}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {filters.location && (
+                  <span className="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
+                    {isArabic ? 'الموقع' : 'Location'}: {filters.location}
+                  </span>
+                )}
+                {filters.type && (
+                  <span className="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
+                    {isArabic ? 'النوع' : 'Type'}: {propertyTypes.find(t => t.value === filters.type)?.label}
+                  </span>
+                )}
+                {filters.status && (
+                  <span className="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
+                    {isArabic ? 'الحالة' : 'Status'}: {statusOptions.find(s => s.value === filters.status)?.label}
+                  </span>
+                )}
+                {filters.bedrooms && (
+                  <span className="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
+                    {isArabic ? 'غرف النوم' : 'Bedrooms'}: {bedroomOptions.find(b => b.value === filters.bedrooms)?.label}
+                  </span>
+                )}
+                {filters.bathrooms && (
+                  <span className="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
+                    {isArabic ? 'الحمامات' : 'Bathrooms'}: {filters.bathrooms}
+                  </span>
+                )}
+                {filters.minPrice && (
+                  <span className="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
+                    {isArabic ? 'أقل سعر' : 'Min Price'}: {filters.minPrice}
+                  </span>
+                )}
+                {filters.maxPrice && (
+                  <span className="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
+                    {isArabic ? 'أعلى سعر' : 'Max Price'}: {filters.maxPrice}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="mt-4 flex justify-between items-center">

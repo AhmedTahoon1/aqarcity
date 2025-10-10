@@ -44,6 +44,7 @@ export const propertiesAPI = {
   getById: (id: string) => api.get(`/properties/${id}`),
   getFeatured: () => api.get('/properties/featured/list'),
   getArchived: (params?: any) => api.get('/properties/archive', { params }),
+
   create: (data: any) => api.post('/properties', data),
   update: (id: string, data: any) => api.put(`/properties/${id}`, data),
   delete: (id: string) => api.delete(`/properties/${id}`),

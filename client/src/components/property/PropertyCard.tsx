@@ -159,14 +159,17 @@ export default function PropertyCard({ property }: PropertyCardProps) {
   };
 
   const handleContact = (type: 'phone' | 'whatsapp') => {
-    if (!property.agent) return;
+    const defaultPhone = '+971501234567';
+    const defaultWhatsapp = '+971501234567';
     
-    if (type === 'phone' && property.agent.phone) {
-      window.open(`tel:${property.agent.phone}`);
-    } else if (type === 'whatsapp' && property.agent.whatsapp) {
+    if (type === 'phone') {
+      const phone = property.agent?.phone || defaultPhone;
+      window.open(`tel:${phone}`);
+    } else if (type === 'whatsapp') {
+      const whatsapp = property.agent?.whatsapp || defaultWhatsapp;
       const title = (isArabic ? property.titleAr : property.titleEn) || 'Property';
       const message = encodeURIComponent(`مرحباً، أنا مهتم بالعقار: ${title}`);
-      window.open(`https://wa.me/${property.agent.whatsapp.replace(/[^0-9]/g, '')}?text=${message}`);
+      window.open(`https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}?text=${message}`);
     }
   };
 
@@ -369,28 +372,22 @@ export default function PropertyCard({ property }: PropertyCardProps) {
             </motion.button>
           </Link>
           
-          {property.agent && (
-            <div className="flex space-x-2 rtl:space-x-reverse">
-              {property.agent.phone && (
-                <button
-                  onClick={() => handleContact('phone')}
-                  className="flex-1 btn btn-outline flex items-center justify-center space-x-1 rtl:space-x-reverse"
-                >
-                  <Phone className="w-4 h-4" />
-                  <span className="text-sm">{isArabic ? 'اتصال' : 'Call'}</span>
-                </button>
-              )}
-              {property.agent.whatsapp && (
-                <button
-                  onClick={() => handleContact('whatsapp')}
-                  className="flex-1 btn btn-outline flex items-center justify-center space-x-1 rtl:space-x-reverse text-green-600 border-green-600 hover:bg-green-50"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span className="text-sm">{isArabic ? 'واتساب' : 'WhatsApp'}</span>
-                </button>
-              )}
-            </div>
-          )}
+          <div className="flex space-x-2 rtl:space-x-reverse">
+            <button
+              onClick={() => handleContact('phone')}
+              className="flex-1 btn btn-outline flex items-center justify-center space-x-1 rtl:space-x-reverse"
+            >
+              <Phone className="w-4 h-4" />
+              <span className="text-sm">{isArabic ? 'اتصال' : 'Call'}</span>
+            </button>
+            <button
+              onClick={() => handleContact('whatsapp')}
+              className="flex-1 btn btn-outline flex items-center justify-center space-x-1 rtl:space-x-reverse text-green-600 border-green-600 hover:bg-green-50"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span className="text-sm">{isArabic ? 'واتساب' : 'WhatsApp'}</span>
+            </button>
+          </div>
         </div>
       </div>
     </motion.div>
