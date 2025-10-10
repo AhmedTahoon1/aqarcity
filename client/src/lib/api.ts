@@ -110,3 +110,16 @@ export const savedSearchesAPI = {
   update: (id: string, data: any) => api.put(`/saved-searches/${id}`, data),
   delete: (id: string) => api.delete(`/saved-searches/${id}`),
 };
+
+export const guestSearchesAPI = {
+  create: (data: any) => api.post('/guest-searches', data),
+  verify: (token: string) => api.get(`/guest-searches/verify/${token}`),
+  preview: (token: string) => api.get(`/guest-searches/${token}/preview`),
+  unsubscribe: (token: string) => api.get(`/guest-searches/unsubscribe/${token}`),
+};
+
+export const usersAPI = {
+  discoverSearches: () => api.get('/users/discover-searches'),
+  linkSearches: (searchIds: string[]) => api.post('/users/link-searches', { searchIds }),
+  declineSearches: (searchIds: string[]) => api.post('/users/decline-searches', { searchIds }),
+};

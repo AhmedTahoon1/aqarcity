@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService, User } from '../lib/auth';
-import { favoritesAPI } from '../lib/api';
+import { favoritesAPI, usersAPI } from '../lib/api';
+import SearchDiscoveryModal from '../components/modals/SearchDiscoveryModal';
 
 interface AuthContextType {
   user: User | null;
@@ -8,6 +9,9 @@ interface AuthContextType {
   isAuthenticated: boolean;
   logout: () => void;
   refreshAuth: () => Promise<void>;
+  discoveredSearches: any[];
+  showDiscoveryModal: boolean;
+  setShowDiscoveryModal: (show: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,6 +31,8 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [discoveredSearches, setDiscoveredSearches] = useState<any[]>([]);
+  const [showDiscoveryModal, setShowDiscoveryModal] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -36,6 +42,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const userData = await authService.getCurrentUser();
           setUser(userData);
           await syncLocalFavorites();
+          await checkForGuestSearches(userData);
         } catch (error: any) {
           if (error.response?.status === 403 || error.response?.status === 401) {
             authService.logout();
@@ -77,6 +84,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   };
   
+  const checkForGuestSearches = async (userData: User) => {
+    try {
+      const response = await usersAPI.discoverSearches();
+      if (response.data.searches.length > 0) {
+        setDiscoveredSearches(response.data.searches);
+        // عرض المودال بعد ثانيتين لإعطاء المستخدم وقت للاستقرار
+        setTimeout(() => {
+          setShowDiscoveryModal(true);
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error discovering searches:', error);
+    }
+  };
+
   const refreshAuth = async () => {
     if (authService.isAuthenticated()) {
       try {
@@ -95,12 +117,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     loading,
     isAuthenticated: authService.isAuthenticated() && !!user,
     logout,
-    refreshAuth
+    refreshAuth,
+    discoveredSearches,
+    showDiscoveryModal,
+    setShowDiscoveryModal
   };
 
   return (
     <AuthContext.Provider value={value}>
       {children}
+      
+      {/* Search Discovery Modal */}
+      <SearchDiscoveryModal
+        isOpen={showDiscoveryModal}
+        onClose={() => setShowDiscoveryModal(false)}
+        discoveredSearches={discoveredSearches}
+      />
     </AuthContext.Provider>
   );
 };

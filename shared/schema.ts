@@ -14,6 +14,9 @@ export const applicationStatusEnum = pgEnum('application_status', ['pending', 'r
 export const notificationTypeEnum = pgEnum('notification_type', ['new_property', 'price_drop', 'new_feature', 'system', 'marketing']);
 export const notificationPriorityEnum = pgEnum('notification_priority', ['low', 'medium', 'high', 'urgent']);
 export const alertFrequencyEnum = pgEnum('alert_frequency', ['instant', 'daily', 'weekly']);
+export const contactTypeEnum = pgEnum('contact_type', ['email', 'whatsapp']);
+export const linkStatusEnum = pgEnum('link_status', ['unlinked', 'auto_linked', 'user_linked', 'user_declined']);
+export const sourceTypeEnum = pgEnum('source_type', ['user', 'guest_migrated', 'guest_linked']);
 
 // Users Table
 export const users = pgTable('users', {
@@ -234,10 +237,49 @@ export const locations = pgTable('locations', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// Guest Searches Table
+export const guestSearches = pgTable('guest_searches', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  contactType: contactTypeEnum('contact_type').notNull(),
+  contactValue: varchar('contact_value', { length: 255 }).notNull(),
+  name: varchar('name', { length: 255 }).notNull(),
+  searchCriteria: json('search_criteria').$type<{
+    city?: string;
+    area?: string;
+    type?: string;
+    status?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    bedrooms?: number;
+    bathrooms?: number;
+    minArea?: number;
+    maxArea?: number;
+    coordinates?: { lat: number; lng: number }[];
+  }>().notNull(),
+  alertsEnabled: boolean('alerts_enabled').default(true),
+  alertFrequency: alertFrequencyEnum('alert_frequency').default('instant'),
+  verificationToken: varchar('verification_token', { length: 255 }).notNull().unique(),
+  isVerified: boolean('is_verified').default(false),
+  verificationExpiresAt: timestamp('verification_expires_at'),
+  lastAlertSent: timestamp('last_alert_sent'),
+  isActive: boolean('is_active').default(true),
+  linkedUserId: uuid('linked_user_id').references(() => users.id),
+  linkStatus: linkStatusEnum('link_status').default('unlinked'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    contactIdx: index('guest_searches_contact_idx').on(table.contactValue),
+    tokenIdx: index('guest_searches_token_idx').on(table.verificationToken),
+    userIdx: index('guest_searches_user_idx').on(table.linkedUserId),
+    activeIdx: index('guest_searches_active_idx').on(table.isActive),
+  };
+});
+
 // Saved Searches Table
 export const savedSearches = pgTable('saved_searches', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').references(() => users.id).notNull(),
+  userId: uuid('user_id').references(() => users.id),
   name: varchar('name', { length: 255 }).notNull(),
   searchCriteria: json('search_criteria').$type<{
     city?: string;
@@ -256,12 +298,16 @@ export const savedSearches = pgTable('saved_searches', {
   alertFrequency: alertFrequencyEnum('alert_frequency').default('instant'),
   lastAlertSent: timestamp('last_alert_sent'),
   isActive: boolean('is_active').default(true),
+  sourceType: sourceTypeEnum('source_type').default('user'),
+  originalGuestId: uuid('original_guest_id').references(() => guestSearches.id),
+  migrationDate: timestamp('migration_date'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => {
   return {
     userIdx: index('saved_searches_user_idx').on(table.userId),
     activeIdx: index('saved_searches_active_idx').on(table.isActive),
+    sourceIdx: index('saved_searches_source_idx').on(table.sourceType),
   };
 });
 
@@ -273,6 +319,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   chatMessages: many(chatMessages),
   reviews: many(reviews),
   savedSearches: many(savedSearches),
+  linkedGuestSearches: many(guestSearches),
 }));
 
 export const agentsRelations = relations(agents, ({ one, many }) => ({
@@ -323,8 +370,13 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   user: one(users, { fields: [notifications.userId], references: [users.id] }),
 }));
 
+export const guestSearchesRelations = relations(guestSearches, ({ one }) => ({
+  linkedUser: one(users, { fields: [guestSearches.linkedUserId], references: [users.id] }),
+}));
+
 export const savedSearchesRelations = relations(savedSearches, ({ one }) => ({
   user: one(users, { fields: [savedSearches.userId], references: [users.id] }),
+  originalGuest: one(guestSearches, { fields: [savedSearches.originalGuestId], references: [guestSearches.id] }),
 }));
 
 // Types
@@ -354,3 +406,5 @@ export type Location = typeof locations.$inferSelect;
 export type NewLocation = typeof locations.$inferInsert;
 export type SavedSearch = typeof savedSearches.$inferSelect;
 export type NewSavedSearch = typeof savedSearches.$inferInsert;
+export type GuestSearch = typeof guestSearches.$inferSelect;
+export type NewGuestSearch = typeof guestSearches.$inferInsert;

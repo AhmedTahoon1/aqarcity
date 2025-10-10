@@ -30,6 +30,7 @@ const Settings = lazy(() => import('@/pages/Settings'));
 const About = lazy(() => import('@/pages/About'));
 const Contact = lazy(() => import('@/pages/Contact'));
 const Compare = lazy(() => import('@/pages/Compare'));
+const VerifySearch = lazy(() => import('@/pages/VerifySearch'));
 
 function App() {
   const { i18n } = useTranslation();
@@ -75,6 +76,7 @@ function App() {
               <Route path="/about" component={About} />
               <Route path="/contact" component={Contact} />
               <Route path="/compare" component={Compare} />
+              <Route path="/verify-search/:token" component={VerifySearch} />
             </Suspense>
           </main>
           <CompareBar />

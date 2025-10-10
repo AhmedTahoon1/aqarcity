@@ -8,6 +8,7 @@ import { StaggeredList, AnimatedContainer } from '@/components/animations';
 import { Grid, List, ChevronLeft, ChevronRight, AlertCircle, X, Bookmark, Info } from 'lucide-react';
 import { useLocation } from 'wouter';
 import SaveSearchModal from '@/components/modals/SaveSearchModal';
+import GuestSaveSearchModal from '@/components/modals/GuestSaveSearchModal';
 import { useAuthContext } from '@/contexts/AuthContext';
 
 export default function Properties() {
@@ -18,6 +19,7 @@ export default function Properties() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('newest');
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showGuestSaveModal, setShowGuestSaveModal] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const { isAuthenticated } = useAuthContext();
   const isArabic = i18n.language === 'ar';
@@ -237,15 +239,16 @@ export default function Properties() {
             <div className="flex items-center space-x-2 rtl:space-x-reverse">
               <button
                 onClick={() => {
-                  if (!isAuthenticated) {
-                    alert(isArabic ? 'يجب تسجيل الدخول أولاً لحفظ البحث' : 'Please login first to save search');
-                    return;
-                  }
                   if (!hasActiveFilters && Object.keys(filters).length === 0) {
                     alert(isArabic ? 'يرجى اختيار فلاتر أولاً قبل حفظ البحث' : 'Please select filters first before saving search');
                     return;
                   }
-                  setShowSaveModal(true);
+                  
+                  if (isAuthenticated) {
+                    setShowSaveModal(true);
+                  } else {
+                    setShowGuestSaveModal(true);
+                  }
                 }}
                 className={`flex items-center space-x-2 rtl:space-x-reverse px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                   hasActiveFilters || Object.keys(filters).length > 0
@@ -440,10 +443,16 @@ export default function Properties() {
           </div>
         )}
 
-        {/* Save Search Modal */}
+        {/* Save Search Modals */}
         <SaveSearchModal
           isOpen={showSaveModal}
           onClose={() => setShowSaveModal(false)}
+          searchCriteria={filters}
+        />
+        
+        <GuestSaveSearchModal
+          isOpen={showGuestSaveModal}
+          onClose={() => setShowGuestSaveModal(false)}
           searchCriteria={filters}
         />
       </div>
