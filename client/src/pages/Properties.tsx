@@ -12,7 +12,7 @@ import { useLocation } from 'wouter';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { LocationSelect } from '@/components/ui/LocationSelect';
 import FeaturesFilter from '@/components/property/FeaturesFilter';
-import SingleHierarchicalSelect from '@/components/shared/SingleHierarchicalSelect';
+import SearchableLocationSelect from '@/components/shared/SearchableLocationSelect';
 
 export default function Properties() {
   const { t, i18n } = useTranslation();
@@ -79,7 +79,14 @@ export default function Properties() {
   
   const { data: propertiesData, isLoading, error } = useQuery({
     queryKey: ['properties', debouncedFilters, currentPage, sortBy],
-    queryFn: () => propertiesAPI.getAll({ ...debouncedFilters, page: currentPage, limit: 12, sort: sortBy }),
+    queryFn: () => {
+      const queryParams = { ...debouncedFilters, page: currentPage, limit: 12, sort: sortBy };
+      // Convert features object to JSON string for API
+      if (queryParams.features && typeof queryParams.features === 'object') {
+        queryParams.features = JSON.stringify(queryParams.features);
+      }
+      return propertiesAPI.getAll(queryParams);
+    },
     staleTime: 30000, // Cache for 30 seconds
     cacheTime: 300000, // Keep in cache for 5 minutes
   });
@@ -163,11 +170,12 @@ export default function Properties() {
               <label className="block text-xs font-medium text-gray-600 mb-1.5">
                 {t('filters.location')}
               </label>
-              <SingleHierarchicalSelect
+              <SearchableLocationSelect
                 value={filters.location || ''}
                 onChange={(addressId, addressName) => handleFilterChange('location', addressId)}
                 placeholder={t('filters.allLocations')}
                 maxLevel={2}
+                showPropertyCount={true}
               />
             </div>
 

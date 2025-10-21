@@ -40,16 +40,7 @@ export const authAPI = {
 };
 
 export const propertiesAPI = {
-  getAll: (params?: any) => {
-    // Handle features object serialization
-    if (params?.features) {
-      params = {
-        ...params,
-        features: JSON.stringify(params.features)
-      };
-    }
-    return api.get('/properties', { params });
-  },
+  getAll: (params?: any) => api.get('/properties', { params }),
   getById: (id: string) => api.get(`/properties/${id}`),
   getFeatured: () => api.get('/properties/featured/list'),
   getArchived: (params?: any) => api.get('/properties/archive', { params }),

@@ -52,12 +52,18 @@ router.get('/', async (req, res) => {
     // Handle location filtering (new hierarchical system)
     if (location) {
       console.log('Filtering by location (address):', location);
-      // Simple approach: include the location itself and all its children
+      // Include the location itself and ALL its descendants (recursive)
       conditions.push(
         sql`(
           ${properties.addressId} = ${location} OR 
           ${properties.addressId} IN (
-            SELECT id FROM addresses WHERE parent_id = ${location}
+            WITH RECURSIVE address_tree AS (
+              SELECT id FROM addresses WHERE parent_id = ${location}
+              UNION ALL
+              SELECT a.id FROM addresses a
+              INNER JOIN address_tree at ON a.parent_id = at.id
+            )
+            SELECT id FROM address_tree
           )
         )`
       );
@@ -176,8 +182,10 @@ router.get('/', async (req, res) => {
         query = query.orderBy(desc(properties.createdAt));
     }
 
-    // Get total count for pagination
-    let countQuery = db.select({ count: sql`count(*)` }).from(properties);
+    // Get total count for pagination with same conditions
+    let countQuery = db.select({ count: sql`count(*)` })
+      .from(properties)
+      .leftJoin(addresses, eq(properties.addressId, addresses.id));
     if (conditions.length > 0) {
       countQuery = countQuery.where(and(...conditions));
     }

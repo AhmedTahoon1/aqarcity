@@ -38,13 +38,21 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Rate limiting
-const limiter = rateLimit({
+// Rate limiting - more lenient for addresses endpoint
+const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'development' ? 1000 : 100, // Higher limit for development
-  message: 'Too many requests from this IP'
+  max: process.env.NODE_ENV === 'development' ? 2000 : 500, // Higher limit
+  message: { error: 'Too many requests from this IP', retryAfter: 900 }
 });
-app.use('/api/', limiter);
+
+const addressLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: process.env.NODE_ENV === 'development' ? 100 : 50, // Very high for addresses
+  message: { error: 'Too many address requests', retryAfter: 60 }
+});
+
+app.use('/api/', generalLimiter);
+app.use('/api/v1/addresses', addressLimiter);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
