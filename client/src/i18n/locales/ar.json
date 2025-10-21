@@ -87,7 +87,17 @@
     "penthouse": "بنتهاوس",
     "studio": "استوديو",
     "activeFilters": "الفلاتر المطبقة:",
-    "filtersCount": "فلتر"
+    "filtersCount": "فلتر",
+    "featuresAndAmenities": "المرافق والمميزات",
+    "amenities": "المرافق",
+    "locationFeatures": "مميزات الموقع",
+    "securityFeatures": "مميزات الأمان",
+    "emirate": "الإمارة",
+    "area": "المنطقة",
+    "allEmirates": "كل الإمارات",
+    "allAreas": "كل المناطق",
+    "allLocations": "كل المواقع",
+    "location": "الموقع"
   },
   "search": {
     "saveSearch": "حفظ البحث",

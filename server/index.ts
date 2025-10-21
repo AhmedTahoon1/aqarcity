@@ -74,6 +74,10 @@ import locationsRoutes from './routes/locations.js';
 import savedSearchesRoutes from './routes/saved-searches.js';
 import guestSearchesRoutes from './routes/guest-searches.js';
 import usersRoutes from './routes/users.js';
+import citiesRoutes from './routes/cities.js';
+import adminCitiesRoutes from './routes/admin/cities.js';
+import adminAddressesRoutes from './routes/admin/addresses.js';
+import addressesRoutes from './routes/addresses.js';
 
 // API routes
 app.use('/api/v1/auth', authRoutes);
@@ -90,6 +94,10 @@ app.use('/api/v1/locations', locationsRoutes);
 app.use('/api/v1/saved-searches', savedSearchesRoutes);
 app.use('/api/v1/guest-searches', guestSearchesRoutes);
 app.use('/api/v1/users', usersRoutes);
+app.use('/api/v1/cities', citiesRoutes);
+app.use('/api/v1/admin/cities', adminCitiesRoutes);
+app.use('/api/v1/admin/addresses', adminAddressesRoutes);
+app.use('/api/v1/addresses', addressesRoutes);
 
 // Serve uploaded files
 app.use('/uploads', express.static('uploads'));

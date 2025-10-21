@@ -40,7 +40,16 @@ export const authAPI = {
 };
 
 export const propertiesAPI = {
-  getAll: (params?: any) => api.get('/properties', { params }),
+  getAll: (params?: any) => {
+    // Handle features object serialization
+    if (params?.features) {
+      params = {
+        ...params,
+        features: JSON.stringify(params.features)
+      };
+    }
+    return api.get('/properties', { params });
+  },
   getById: (id: string) => api.get(`/properties/${id}`),
   getFeatured: () => api.get('/properties/featured/list'),
   getArchived: (params?: any) => api.get('/properties/archive', { params }),
@@ -123,4 +132,12 @@ export const usersAPI = {
   discoverSearches: () => api.get('/users/discover-searches'),
   linkSearches: (searchIds: string[]) => api.post('/users/link-searches', { searchIds }),
   declineSearches: (searchIds: string[]) => api.post('/users/decline-searches', { searchIds }),
+};
+
+export const addressesAPI = {
+  getAll: () => api.get('/admin/addresses'),
+  create: (data: any) => api.post('/admin/addresses', data),
+  update: (id: string, data: any) => api.put(`/admin/addresses/${id}`, data),
+  delete: (id: string) => api.delete(`/admin/addresses/${id}`),
+  getPropertiesCount: (id: string) => api.get(`/admin/addresses/${id}/properties-count`),
 };

@@ -10,6 +10,7 @@ import YouTubeVideo from '../components/property/YouTubeVideo';
 import MortgageCalculator from '../components/property/MortgageCalculator';
 import InquiryForm from '../components/property/InquiryForm';
 import PropertyCard from '../components/property/PropertyCard';
+import PropertyFeatures from '../components/property/PropertyFeatures';
 import { useFavorites } from '../hooks/useFavorites';
 import { useCompareStore } from '../stores/compareStore';
 import { FavoriteButton } from '../components/animations';
@@ -409,17 +410,11 @@ export default function PropertyDetails() {
                 </p>
               </div>
 
-              {property.features && property.features.length > 0 && (
+              {/* Property Features */}
+              {property.features && (
                 <div className="mb-6">
-                  <h2 className="text-xl font-semibold mb-3">{t('property.features')}</h2>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {property.features.map((feature: string, index: number) => (
-                      <div key={index} className="flex items-center p-2 bg-gray-50 rounded">
-                        <div className="w-2 h-2 bg-primary-600 rounded-full mr-2"></div>
-                        <span className="text-sm">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
+                  <h2 className="text-xl font-semibold mb-4">{t('property.features')}</h2>
+                  <PropertyFeatures features={property.features} />
                 </div>
               )}
             </div>

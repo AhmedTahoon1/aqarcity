@@ -36,6 +36,7 @@ const PrivacyPolicy = lazy(() => import('@/pages/legal/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('@/pages/legal/TermsOfService'));
 const Disclaimer = lazy(() => import('@/pages/legal/Disclaimer'));
 const CookiePolicy = lazy(() => import('@/pages/legal/CookiePolicy'));
+const AddressesManagement = lazy(() => import('@/pages/admin/AddressesManagement'));
 
 function App() {
   const { i18n } = useTranslation();
@@ -85,6 +86,9 @@ function App() {
               <Route path="/terms-of-service" component={TermsOfService} />
               <Route path="/disclaimer" component={Disclaimer} />
               <Route path="/cookie-policy" component={CookiePolicy} />
+              <Route path="/admin/addresses">
+                <ProtectedRoute><AddressesManagement /></ProtectedRoute>
+              </Route>
             </Suspense>
           </main>
           <CompareBar />

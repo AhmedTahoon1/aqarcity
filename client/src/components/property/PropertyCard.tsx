@@ -2,10 +2,18 @@ import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useTranslation } from 'react-i18next';
 import { Heart, MapPin, Bed, Bath, Square, ChevronLeft, ChevronRight, Phone, MessageCircle, GitCompare } from 'lucide-react';
+
+// WhatsApp Icon Component
+const WhatsAppIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+  </svg>
+);
 import { useFavorites } from '../../hooks/useFavorites';
 import { motion } from 'framer-motion';
 import { FavoriteButton } from '../animations';
 import { useCompareStore } from '../../stores/compareStore';
+import PropertyFeatures from './PropertyFeatures';
 
 interface Property {
   id: string;
@@ -22,6 +30,11 @@ interface Property {
   bathrooms: number;
   areaSqft: number;
   images: string[];
+  features?: {
+    amenities: string[];
+    location: string[];
+    security: string[];
+  };
   isFeatured: boolean;
   completionStatus?: 'completed' | 'under_construction';
   handoverStatus?: 'ready' | 'future';
@@ -74,19 +87,7 @@ export default function PropertyCard({ property, hideFavoriteButton = false }: P
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   
-  // Auto-advance images every 5 seconds
-  useEffect(() => {
-    const images = property.images?.length > 0 ? property.images : ['/sample.svg'];
-    if (images.length <= 1) return;
-    
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % images.length);
-    }, 5000);
-    
-    return () => {
-      clearInterval(interval);
-    };
-  }, [property.images]);
+  // Removed auto-advance images
 
   const formatPrice = (price: string, currency: string) => {
     const numPrice = parseFloat(price);
@@ -205,12 +206,13 @@ export default function PropertyCard({ property, hideFavoriteButton = false }: P
       }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
     >
-      <div 
-        className="relative group overflow-hidden"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
+      <Link href={`/properties/${property.id}`}>
+        <div 
+          className="relative group overflow-hidden cursor-pointer"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
         {/* Main Image */}
         <div className="relative h-48 overflow-hidden bg-gray-200 select-none">
           {/* Loading Skeleton */}
@@ -274,6 +276,7 @@ export default function PropertyCard({ property, hideFavoriteButton = false }: P
                         ? 'bg-white scale-125' 
                         : 'bg-white/50 hover:bg-white/80'
                     }`}
+                    style={{ marginLeft: '2px', marginRight: '2px' }}
                   />
                 ));
               })()}
@@ -341,76 +344,70 @@ export default function PropertyCard({ property, hideFavoriteButton = false }: P
             </motion.button>
           </div>
         )}
-      </div>
-
-      <div className="p-4">
-        {/* Location */}
-        <div className="flex items-center text-sm text-gray-500 mb-2">
-          <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-          <span className="truncate">{property.city} - {property.location}</span>
         </div>
+      </Link>
 
-        {/* Title */}
-        <h3 className="font-semibold text-lg mb-3 line-clamp-2 leading-tight">
-          {(() => {
-            const title = (isArabic ? property.titleAr : property.titleEn) || 'Property';
-            return title.length > 28 ? title.substring(0, 28) + '...' : title;
-          })()}
-        </h3>
-
-        {/* Price and Type */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="text-2xl font-bold text-primary-600">
-            {formatPrice(property.price, property.currency)}
+      <div className="p-4 space-y-3">
+        {/* Section 2: Location + Type */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center text-sm text-gray-500">
+            <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+            <span className="truncate">{property.city} - {property.location}</span>
           </div>
-          <div className="text-sm text-gray-500 capitalize bg-gray-100 px-2 py-1 rounded">
+          <span className="text-xs text-gray-500 capitalize bg-gray-100 px-2 py-1 rounded-full">
             {property.propertyType}
-          </div>
+          </span>
         </div>
 
-        {/* Property Details */}
-        <div className="flex items-center justify-between text-sm text-gray-600 mb-4 bg-gradient-to-r from-gray-50 to-gray-100 p-3 rounded-lg border border-gray-200">
-          <div className="flex items-center space-x-1 rtl:space-x-reverse group/detail hover:text-primary-600 transition-colors">
-            <Bed className="w-4 h-4 text-primary-600 group-hover/detail:scale-110 transition-transform" />
+        {/* Section 3: Title - Clickable */}
+        <Link href={`/properties/${property.id}`}>
+          <h3 className="font-semibold text-lg truncate leading-tight hover:text-primary-600 transition-colors cursor-pointer">
+            {(isArabic ? property.titleAr : property.titleEn) || 'Property'}
+          </h3>
+        </Link>
+
+        {/* Section 4: Specs */}
+        <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
+          <div className="flex items-center space-x-1 rtl:space-x-reverse">
+            <Bed className="w-4 h-4 text-primary-600" />
             <span className="font-medium">{property.bedrooms || 'Studio'}</span>
           </div>
-          <div className="flex items-center space-x-1 rtl:space-x-reverse group/detail hover:text-primary-600 transition-colors">
-            <Bath className="w-4 h-4 text-primary-600 group-hover/detail:scale-110 transition-transform" />
+          <div className="flex items-center space-x-1 rtl:space-x-reverse">
+            <Bath className="w-4 h-4 text-primary-600" />
             <span className="font-medium">{property.bathrooms}</span>
           </div>
-          <div className="flex items-center space-x-1 rtl:space-x-reverse group/detail hover:text-primary-600 transition-colors">
-            <Square className="w-4 h-4 text-primary-600 group-hover/detail:scale-110 transition-transform" />
+          <div className="flex items-center space-x-1 rtl:space-x-reverse">
+            <Square className="w-4 h-4 text-primary-600" />
             <span className="font-medium">{property.areaSqft?.toLocaleString() || 'N/A'}</span>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="space-y-2">
-          <Link href={`/properties/${property.id}`}>
-            <motion.button 
-              className="w-full btn btn-primary"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-            >
-              {t('property.viewDetails')}
-            </motion.button>
-          </Link>
-          
-          <div className="flex space-x-2 rtl:space-x-reverse">
+        {/* Section 5: Features */}
+        {property.features && (
+          <div>
+            <PropertyFeatures features={property.features} compact={true} />
+          </div>
+        )}
+
+        {/* Section 6: Price + Buttons */}
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+          <div className="text-xl font-bold text-primary-600">
+            {formatPrice(property.price, property.currency)}
+          </div>
+          <div className="flex items-center space-x-2 rtl:space-x-reverse">
             <button
               onClick={() => handleContact('phone')}
-              className="flex-1 btn btn-outline flex items-center justify-center space-x-1 rtl:space-x-reverse"
+              className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+              title={isArabic ? 'اتصال' : 'Call'}
             >
               <Phone className="w-4 h-4" />
-              <span className="text-sm">{isArabic ? 'اتصال' : 'Call'}</span>
             </button>
             <button
               onClick={() => handleContact('whatsapp')}
-              className="flex-1 btn btn-outline flex items-center justify-center space-x-1 rtl:space-x-reverse text-green-600 border-green-600 hover:bg-green-50"
+              className="p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors"
+              title={isArabic ? 'واتساب' : 'WhatsApp'}
             >
-              <MessageCircle className="w-4 h-4" />
-              <span className="text-sm">{isArabic ? 'واتساب' : 'WhatsApp'}</span>
+              <WhatsAppIcon className="w-4 h-4" />
             </button>
           </div>
         </div>

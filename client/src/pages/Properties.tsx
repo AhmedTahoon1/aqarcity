@@ -6,23 +6,29 @@ import { useDebounce } from '@/hooks/useDebounce';
 import PropertyCard from '@/components/property/PropertyCard';
 import { PropertyListSkeleton } from '@/components/skeletons';
 import { StaggeredList, AnimatedContainer } from '@/components/animations';
-import { Grid, List, ChevronLeft, ChevronRight, AlertCircle, X, Bookmark, Info } from 'lucide-react';
+import { Grid, List, ChevronLeft, ChevronRight, AlertCircle, X } from 'lucide-react';
 import { useLocation } from 'wouter';
-import SaveSearchModal from '@/components/modals/SaveSearchModal';
-import GuestSaveSearchModal from '@/components/modals/GuestSaveSearchModal';
+
 import { useAuthContext } from '@/contexts/AuthContext';
 import { LocationSelect } from '@/components/ui/LocationSelect';
+import FeaturesFilter from '@/components/property/FeaturesFilter';
+import SingleHierarchicalSelect from '@/components/shared/SingleHierarchicalSelect';
 
 export default function Properties() {
   const { t, i18n } = useTranslation();
   const [location] = useLocation();
-  const [filters, setFilters] = useState<any>({});
+  const [filters, setFilters] = useState<any>({
+    features: {
+      amenities: [],
+      location: [],
+      security: []
+    }
+  });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('newest');
-  const [showSaveModal, setShowSaveModal] = useState(false);
-  const [showGuestSaveModal, setShowGuestSaveModal] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
+
+
   const { isAuthenticated } = useAuthContext();
   const isArabic = i18n.language === 'ar';
 
@@ -83,7 +89,7 @@ export default function Properties() {
     return propertiesData.data.properties;
   }, [propertiesData]);
 
-  const handleFilterChange = (key: string, value: string) => {
+  const handleFilterChange = (key: string, value: string | any) => {
     const newFilters = { ...filters };
     
     if (value === '' || value === null || value === undefined) {
@@ -95,10 +101,10 @@ export default function Properties() {
     setFilters(newFilters);
     setCurrentPage(1);
     
-    // Update URL to reflect current filters
+    // Update URL to reflect current filters (excluding complex objects like features)
     const params = new URLSearchParams();
     Object.entries(newFilters).forEach(([k, v]) => {
-      if (v && v !== '') {
+      if (v && v !== '' && typeof v === 'string') {
         params.append(k, v);
       }
     });
@@ -107,8 +113,18 @@ export default function Properties() {
     window.history.replaceState({}, '', newUrl);
   };
 
+  const handleFeaturesChange = (features: { amenities: string[]; location: string[]; security: string[] }) => {
+    handleFilterChange('features', features);
+  };
+
   const clearFilters = () => {
-    setFilters({});
+    setFilters({
+      features: {
+        amenities: [],
+        location: [],
+        security: []
+      }
+    });
     setCurrentPage(1);
     // Clear URL parameters
     window.history.replaceState({}, '', '/properties');
@@ -145,12 +161,13 @@ export default function Properties() {
             {/* Location Filter */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">
-                {t('property.location')}
+                {t('filters.location')}
               </label>
-              <LocationSelect
+              <SingleHierarchicalSelect
                 value={filters.location || ''}
-                onChange={(locationId) => handleFilterChange('location', locationId || '')}
-                placeholder={isArabic ? 'اختر الموقع' : 'Select Location'}
+                onChange={(addressId, addressName) => handleFilterChange('location', addressId)}
+                placeholder={t('filters.allLocations')}
+                maxLevel={2}
               />
             </div>
 
@@ -252,6 +269,14 @@ export default function Properties() {
             </div>
           </div>
 
+          {/* Features Filter */}
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <FeaturesFilter
+              selectedFeatures={filters.features || { amenities: [], location: [], security: [] }}
+              onFeaturesChange={handleFeaturesChange}
+            />
+          </div>
+
           {/* Active Filters Display */}
           {hasActiveFilters && (
             <div className="mt-4 p-3 bg-primary-50 rounded-lg border border-primary-200">
@@ -264,9 +289,9 @@ export default function Properties() {
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {filters.location && (
+                {filters.city && (
                   <span className="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
-                    {t('property.location')}: {filters.location}
+                    {t('filters.city')}: {filters.city}
                   </span>
                 )}
                 {filters.type && (
@@ -317,53 +342,7 @@ export default function Properties() {
               )}
             </div>
             
-            <div className="flex items-center space-x-2 rtl:space-x-reverse">
-              <button
-                onClick={() => {
-                  if (!hasActiveFilters && Object.keys(filters).length === 0) {
-                    alert(t('search.selectFiltersFirst'));
-                    return;
-                  }
-                  
-                  if (isAuthenticated) {
-                    setShowSaveModal(true);
-                  } else {
-                    setShowGuestSaveModal(true);
-                  }
-                }}
-                className={`flex items-center space-x-2 rtl:space-x-reverse px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  hasActiveFilters || Object.keys(filters).length > 0
-                    ? 'text-white bg-primary-600 hover:bg-primary-700'
-                    : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
-                }`}
-              >
-                <Bookmark className="w-4 h-4" />
-                <span>{t('search.saveSearch')}</span>
-              </button>
-              
-              <div className="relative">
-                <button
-                  onMouseEnter={() => setShowTooltip(true)}
-                  onMouseLeave={() => setShowTooltip(false)}
-                  onClick={() => setShowTooltip(!showTooltip)}
-                  className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <Info className="w-4 h-4" />
-                </button>
-                
-                {showTooltip && (
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-10">
-                    <div className="text-center">
-                      <>
-                        <p className="font-semibold mb-1">{t('search.saveSearch')}</p>
-                        <p>{t('search.saveSearchDescription')}</p>
-                      </>
-                    </div>
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-                  </div>
-                )}
-              </div>
-            </div>
+
           </div>
         </div>
 
@@ -517,18 +496,7 @@ export default function Properties() {
           </div>
         )}
 
-        {/* Save Search Modals */}
-        <SaveSearchModal
-          isOpen={showSaveModal}
-          onClose={() => setShowSaveModal(false)}
-          searchCriteria={filters}
-        />
-        
-        <GuestSaveSearchModal
-          isOpen={showGuestSaveModal}
-          onClose={() => setShowGuestSaveModal(false)}
-          searchCriteria={filters}
-        />
+
       </div>
     </div>
   );

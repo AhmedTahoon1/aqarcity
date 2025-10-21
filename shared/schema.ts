@@ -37,6 +37,42 @@ export const users = pgTable('users', {
   };
 });
 
+// Emirates Table (Main Cities)
+export const emirates = pgTable('emirates', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  nameEn: varchar('name_en', { length: 255 }).notNull(),
+  nameAr: varchar('name_ar', { length: 255 }).notNull(),
+  isActive: boolean('is_active').default(true),
+  displayOrder: integer('display_order').default(0),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    activeIdx: index('emirates_active_idx').on(table.isActive),
+  };
+});
+
+// Addresses Table (Hierarchical like WordPress Categories)
+export const addresses = pgTable('addresses', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  nameEn: varchar('name_en', { length: 255 }).notNull(),
+  nameAr: varchar('name_ar', { length: 255 }).notNull(),
+  parentId: uuid('parent_id').references(() => addresses.id), // NULL for main cities
+  level: integer('level').notNull().default(0), // 0=Emirates, 1=Areas, 2=Sub-areas, etc.
+  path: varchar('path', { length: 500 }), // /dubai/marina/tower-1 for breadcrumbs
+  isActive: boolean('is_active').default(true),
+  displayOrder: integer('display_order').default(0),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    parentIdx: index('addresses_parent_idx').on(table.parentId),
+    levelIdx: index('addresses_level_idx').on(table.level),
+    pathIdx: index('addresses_path_idx').on(table.path),
+    activeIdx: index('addresses_active_idx').on(table.isActive),
+  };
+});
+
 // Developers Table
 export const developers = pgTable('developers', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -77,7 +113,7 @@ export const properties = pgTable('properties', {
   descriptionEn: text('description_en'),
   descriptionAr: text('description_ar'),
   location: varchar('location', { length: 255 }).notNull(),
-  city: varchar('city', { length: 100 }).notNull(),
+  addressId: uuid('address_id').references(() => addresses.id).notNull(), // Main address (can be any level)
   areaName: varchar('area_name', { length: 100 }),
   coordinates: json('coordinates').$type<{ lat: number; lng: number }>(),
   price: decimal('price', { precision: 15, scale: 2 }).notNull(),
@@ -88,7 +124,11 @@ export const properties = pgTable('properties', {
   bathrooms: integer('bathrooms'),
   areaSqft: integer('area_sqft'),
   yearBuilt: integer('year_built'),
-  features: json('features').$type<string[]>().default([]),
+  features: json('features').$type<{
+    amenities: string[];
+    location: string[];
+    security: string[];
+  }>().default({ amenities: [], location: [], security: [] }),
   images: json('images').$type<string[]>().default([]),
   videoUrl: text('video_url'),
   completionStatus: completionStatusEnum('completion_status').default('completed'),
@@ -105,7 +145,7 @@ export const properties = pgTable('properties', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => {
   return {
-    cityIdx: index('properties_city_idx').on(table.city),
+    addressIdx: index('properties_address_idx').on(table.addressId),
     propertyTypeIdx: index('properties_type_idx').on(table.propertyType),
     statusIdx: index('properties_status_idx').on(table.status),
     priceIdx: index('properties_price_idx').on(table.price),
@@ -255,6 +295,11 @@ export const guestSearches = pgTable('guest_searches', {
     minArea?: number;
     maxArea?: number;
     coordinates?: { lat: number; lng: number }[];
+    features?: {
+      amenities?: string[];
+      location?: string[];
+      security?: string[];
+    };
   }>().notNull(),
   alertsEnabled: boolean('alerts_enabled').default(true),
   alertFrequency: alertFrequencyEnum('alert_frequency').default('instant'),
@@ -293,6 +338,11 @@ export const savedSearches = pgTable('saved_searches', {
     minArea?: number;
     maxArea?: number;
     coordinates?: { lat: number; lng: number }[];
+    features?: {
+      amenities?: string[];
+      location?: string[];
+      security?: string[];
+    };
   }>().notNull(),
   alertsEnabled: boolean('alerts_enabled').default(true),
   alertFrequency: alertFrequencyEnum('alert_frequency').default('instant'),
@@ -329,9 +379,20 @@ export const agentsRelations = relations(agents, ({ one, many }) => ({
   reviews: many(reviews),
 }));
 
+export const emiratesRelations = relations(emirates, ({ many }) => ({
+  properties: many(properties),
+}));
+
+export const addressesRelations = relations(addresses, ({ one, many }) => ({
+  parent: one(addresses, { fields: [addresses.parentId], references: [addresses.id] }),
+  children: many(addresses),
+  properties: many(properties),
+}));
+
 export const propertiesRelations = relations(properties, ({ one, many }) => ({
   agent: one(agents, { fields: [properties.agentId], references: [agents.id] }),
   developer: one(developers, { fields: [properties.developerId], references: [developers.id] }),
+  address: one(addresses, { fields: [properties.addressId], references: [addresses.id] }),
   favorites: many(favorites),
   inquiries: many(inquiries),
   chatMessages: many(chatMessages),
@@ -404,6 +465,10 @@ export type Notification = typeof notifications.$inferSelect;
 export type NewNotification = typeof notifications.$inferInsert;
 export type Location = typeof locations.$inferSelect;
 export type NewLocation = typeof locations.$inferInsert;
+export type Emirate = typeof emirates.$inferSelect;
+export type NewEmirate = typeof emirates.$inferInsert;
+export type Address = typeof addresses.$inferSelect;
+export type NewAddress = typeof addresses.$inferInsert;
 export type SavedSearch = typeof savedSearches.$inferSelect;
 export type NewSavedSearch = typeof savedSearches.$inferInsert;
 export type GuestSearch = typeof guestSearches.$inferSelect;

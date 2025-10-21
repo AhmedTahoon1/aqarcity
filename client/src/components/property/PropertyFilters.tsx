@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Filter, X } from 'lucide-react';
+import FeaturesFilter from './FeaturesFilter';
+import EmirateAreaFilter from './EmirateAreaFilter';
 
 interface FilterProps {
   onFiltersChange: (filters: any) => void;
@@ -11,7 +13,8 @@ export default function PropertyFilters({ onFiltersChange, initialFilters = {} }
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === 'ar';
   const [filters, setFilters] = useState({
-    city: initialFilters.city || '',
+    emirate: initialFilters.emirate || '',
+    area: initialFilters.area || '',
     developer: initialFilters.developer || '',
     status: initialFilters.status || '',
     type: initialFilters.type || '',
@@ -19,18 +22,15 @@ export default function PropertyFilters({ onFiltersChange, initialFilters = {} }
     maxPrice: initialFilters.maxPrice || '',
     bedrooms: initialFilters.bedrooms || '',
     bathrooms: initialFilters.bathrooms || '',
+    features: initialFilters.features || {
+      amenities: [],
+      location: [],
+      security: []
+    },
     ...initialFilters
   });
 
-  const cities = [
-    { value: 'Dubai', label: isArabic ? 'دبي' : 'Dubai' },
-    { value: 'Abu Dhabi', label: isArabic ? 'أبو ظبي' : 'Abu Dhabi' },
-    { value: 'Sharjah', label: isArabic ? 'الشارقة' : 'Sharjah' },
-    { value: 'Ajman', label: isArabic ? 'عجمان' : 'Ajman' },
-    { value: 'Ras Al Khaimah', label: isArabic ? 'رأس الخيمة' : 'Ras Al Khaimah' },
-    { value: 'Fujairah', label: isArabic ? 'الفجيرة' : 'Fujairah' },
-    { value: 'Umm Al Quwain', label: isArabic ? 'أم القيوين' : 'Umm Al Quwain' }
-  ];
+
 
   const developers = [
     { value: 'Emaar Properties', label: isArabic ? 'إعمار العقارية' : 'Emaar Properties' },
@@ -68,16 +68,28 @@ export default function PropertyFilters({ onFiltersChange, initialFilters = {} }
     onFiltersChange(newFilters);
   };
 
+  const handleFeaturesChange = (features: { amenities: string[]; location: string[]; security: string[] }) => {
+    const newFilters = { ...filters, features };
+    setFilters(newFilters);
+    onFiltersChange(newFilters);
+  };
+
   const clearFilters = () => {
     const clearedFilters = {
-      city: '',
+      emirate: '',
+      area: '',
       developer: '',
       status: '',
       type: '',
       minPrice: '',
       maxPrice: '',
       bedrooms: '',
-      bathrooms: ''
+      bathrooms: '',
+      features: {
+        amenities: [],
+        location: [],
+        security: []
+      }
     };
     setFilters(clearedFilters);
     onFiltersChange(clearedFilters);
@@ -88,24 +100,13 @@ export default function PropertyFilters({ onFiltersChange, initialFilters = {} }
   return (
     <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
       <div className="space-y-4">
-            {/* City Filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('filters.city')}
-              </label>
-              <select
-                value={filters.city}
-                onChange={(e) => handleFilterChange('city', e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              >
-                <option value="">{t('filters.allCities')}</option>
-                {cities.map(city => (
-                  <option key={city.value} value={city.value}>
-                    {city.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Emirate & Area Filter */}
+            <EmirateAreaFilter
+              selectedEmirate={filters.emirate}
+              selectedArea={filters.area}
+              onEmirateChange={(emirateId) => handleFilterChange('emirate', emirateId)}
+              onAreaChange={(areaId) => handleFilterChange('area', areaId)}
+            />
 
             {/* Developer Filter */}
             <div>
@@ -228,6 +229,12 @@ export default function PropertyFilters({ onFiltersChange, initialFilters = {} }
                 <option value="4">4+</option>
               </select>
             </div>
+            
+            {/* Features Filter */}
+            <FeaturesFilter
+              selectedFeatures={filters.features}
+              onFeaturesChange={handleFeaturesChange}
+            />
             
             {/* Clear Filters */}
             {hasActiveFilters && (

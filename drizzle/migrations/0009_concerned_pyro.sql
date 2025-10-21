@@ -1,0 +1,1 @@
+ALTER TABLE "properties" ALTER COLUMN "features" SET DEFAULT '{"amenities":[],"location":[],"security":[]}'::json;

@@ -1,6 +1,6 @@
 import express from 'express';
 import { db } from '../../db';
-import { properties, agents, developers } from '../../shared/schema';
+import { properties, agents, developers, addresses } from '../../shared/schema';
 import { eq, and, gte, lte, ilike, desc, asc, sql } from 'drizzle-orm';
 import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
 import { transformPropertyResult } from '../utils/property-transformer';
@@ -13,8 +13,9 @@ router.get('/', async (req, res) => {
     console.log('Properties API - Received query:', req.query);
     
     const {
-      city,
+      emirate,
       area,
+      city,
       location,
       type,
       status,
@@ -25,6 +26,10 @@ router.get('/', async (req, res) => {
       minArea,
       maxArea,
       featured,
+      amenities,
+      locationFeatures,
+      security,
+      features,
       page = 1,
       limit = 12,
       sort = 'newest'
@@ -33,27 +38,63 @@ router.get('/', async (req, res) => {
     let query = db.select({
       property: properties,
       agent: agents,
-      developer: developers
+      developer: developers,
+      address: addresses
     })
     .from(properties)
     .leftJoin(agents, eq(properties.agentId, agents.id))
-    .leftJoin(developers, eq(properties.developerId, developers.id));
+    .leftJoin(developers, eq(properties.developerId, developers.id))
+    .leftJoin(addresses, eq(properties.addressId, addresses.id));
 
     // Apply filters
     const conditions = [];
     
-    // Handle location filtering - simplified approach
+    // Handle location filtering (new hierarchical system)
     if (location) {
-      console.log('Filtering by location:', location);
-      // Simple location filtering by treating location as city name
+      console.log('Filtering by location (address):', location);
+      // Simple approach: include the location itself and all its children
       conditions.push(
-        sql`(${ilike(properties.city, `%${location}%`)} OR ${ilike(properties.areaName, `%${location}%`)})`
+        sql`(
+          ${properties.addressId} = ${location} OR 
+          ${properties.addressId} IN (
+            SELECT id FROM addresses WHERE parent_id = ${location}
+          )
+        )`
+      );
+    }
+    
+    // Handle emirate/area filtering (legacy support)
+    if (area && !location) {
+      console.log('Filtering by area:', area);
+      conditions.push(eq(properties.addressId, area));
+    } else if (emirate && !location) {
+      console.log('Filtering by emirate:', emirate);
+      conditions.push(
+        sql`${properties.addressId} IN (
+          SELECT id FROM addresses 
+          WHERE parent_id = ${emirate} OR id = ${emirate}
+        )`
       );
     }
     
     // Legacy city/area filters (for backward compatibility)
-    if (city && !location) conditions.push(ilike(properties.city, `%${city}%`));
-    if (area && !location) conditions.push(ilike(properties.areaName, `%${area}%`));
+    if (city && !location) {
+      // Handle both Arabic and English city names
+      const cityMappings = {
+        'Dubai': 'دبي',
+        'Abu Dhabi': 'أبوظبي', 
+        'Sharjah': 'الشارقة',
+        'Ajman': 'عجمان',
+        'Ras Al Khaimah': 'رأس الخيمة',
+        'Fujairah': 'الفجيرة',
+        'Umm Al Quwain': 'أم القيوين'
+      };
+      const arabicCity = cityMappings[city] || city;
+      conditions.push(
+        sql`(${ilike(properties.location, `%${city}%`)} OR ${ilike(properties.location, `%${arabicCity}%`)})`
+      );
+    }
+
     if (type) conditions.push(eq(properties.propertyType, type as any));
     if (status) conditions.push(eq(properties.status, status as any));
     if (minPrice) conditions.push(gte(properties.price, minPrice.toString()));
@@ -63,6 +104,58 @@ router.get('/', async (req, res) => {
     if (minArea) conditions.push(gte(properties.areaSqft, Number(minArea)));
     if (maxArea) conditions.push(lte(properties.areaSqft, Number(maxArea)));
     if (featured === 'true') conditions.push(eq(properties.isFeatured, true));
+    
+    // Features filtering - handle both old format and new structured format
+    if (features && typeof features === 'string') {
+      try {
+        const parsedFeatures = JSON.parse(features);
+        
+        // Amenities filtering
+        if (parsedFeatures.amenities && parsedFeatures.amenities.length > 0) {
+          parsedFeatures.amenities.forEach((amenity: string) => {
+            conditions.push(sql`${properties.features}::jsonb -> 'amenities' ? ${amenity}`);
+          });
+        }
+        
+        // Location features filtering
+        if (parsedFeatures.location && parsedFeatures.location.length > 0) {
+          parsedFeatures.location.forEach((feature: string) => {
+            conditions.push(sql`${properties.features}::jsonb -> 'location' ? ${feature}`);
+          });
+        }
+        
+        // Security features filtering
+        if (parsedFeatures.security && parsedFeatures.security.length > 0) {
+          parsedFeatures.security.forEach((feature: string) => {
+            conditions.push(sql`${properties.features}::jsonb -> 'security' ? ${feature}`);
+          });
+        }
+      } catch (e) {
+        console.log('Error parsing features:', e);
+      }
+    }
+    
+    // Legacy individual feature filters (for backward compatibility)
+    if (amenities) {
+      const amenitiesArray = Array.isArray(amenities) ? amenities : [amenities];
+      amenitiesArray.forEach(amenity => {
+        conditions.push(sql`${properties.features}::jsonb -> 'amenities' ? ${amenity}`);
+      });
+    }
+    
+    if (locationFeatures) {
+      const locationArray = Array.isArray(locationFeatures) ? locationFeatures : [locationFeatures];
+      locationArray.forEach(feature => {
+        conditions.push(sql`${properties.features}::jsonb -> 'location' ? ${feature}`);
+      });
+    }
+    
+    if (security) {
+      const securityArray = Array.isArray(security) ? security : [security];
+      securityArray.forEach(feature => {
+        conditions.push(sql`${properties.features}::jsonb -> 'security' ? ${feature}`);
+      });
+    }
 
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
@@ -138,11 +231,13 @@ router.get('/:id', async (req, res) => {
     const result = await db.select({
       property: properties,
       agent: agents,
-      developer: developers
+      developer: developers,
+      address: addresses
     })
     .from(properties)
     .leftJoin(agents, eq(properties.agentId, agents.id))
     .leftJoin(developers, eq(properties.developerId, developers.id))
+    .leftJoin(addresses, eq(properties.addressId, addresses.id))
     .where(eq(properties.id, id))
     .limit(1);
 
@@ -155,7 +250,16 @@ router.get('/:id', async (req, res) => {
       .set({ viewsCount: result[0].property.viewsCount + 1 })
       .where(eq(properties.id, id));
 
-    res.json(result[0]);
+    const transformedResult = {
+      ...result[0],
+      property: {
+        ...result[0].property,
+        location: result[0].address ? result[0].address.nameEn : result[0].property.location,
+        areaName: result[0].address ? result[0].address.nameAr : result[0].property.areaName
+      }
+    };
+    
+    res.json(transformedResult);
   } catch (error) {
     console.error('Property fetch error:', error);
     res.status(500).json({ error: 'Failed to fetch property' });
