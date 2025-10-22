@@ -35,6 +35,10 @@
     "test:features-system": "tsx drizzle/test-features-system.ts",
     "delete:all-properties": "tsx drizzle/delete-all-properties.ts",
     "seed:professional-properties": "tsx drizzle/seed-professional-properties.ts",
+    "seed:enhanced-agents": "tsx drizzle/enhanced-agents-seed.ts",
+    "update:existing-agents": "tsx drizzle/update-existing-agents.ts",
+    "safe:agents-update": "tsx drizzle/safe-agents-update.ts",
+    "add:basic-agents": "tsx drizzle/add-basic-agents.ts",
     "start": "node dist/server/index.js",
     "migrate-cities": "npm run db:migrate-cities",
     "migrate-addresses": "npm run db:migrate-addresses"

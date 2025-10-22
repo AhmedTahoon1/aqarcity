@@ -72,6 +72,7 @@ import authRoutes from './routes/auth.js';
 import oauthRoutes from './routes/oauth.js';
 import propertiesRoutes from './routes/properties.js';
 import agentsRoutes from './routes/agents.js';
+import agentTeamsRoutes from './routes/agent-teams.js';
 import developersRoutes from './routes/developers.js';
 import favoritesRoutes from './routes/favorites.js';
 import inquiriesRoutes from './routes/inquiries.js';
@@ -86,6 +87,7 @@ import citiesRoutes from './routes/cities.js';
 import adminCitiesRoutes from './routes/admin/cities.js';
 import adminAddressesRoutes from './routes/admin/addresses.js';
 import adminFeaturesRoutes from './routes/admin/features.js';
+import adminAgentsRoutes from './routes/admin/agents.js';
 import addressesRoutes from './routes/addresses.js';
 import featuresRoutes from './routes/features.js';
 
@@ -94,6 +96,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/oauth', oauthRoutes);
 app.use('/api/v1/properties', propertiesRoutes);
 app.use('/api/v1/agents', agentsRoutes);
+app.use('/api/v1/agent-teams', agentTeamsRoutes);
 app.use('/api/v1/developers', developersRoutes);
 app.use('/api/v1/favorites', favoritesRoutes);
 app.use('/api/v1/inquiries', inquiriesRoutes);
@@ -108,6 +111,7 @@ app.use('/api/v1/cities', citiesRoutes);
 app.use('/api/v1/admin/cities', adminCitiesRoutes);
 app.use('/api/v1/admin/addresses', adminAddressesRoutes);
 app.use('/api/v1/admin/features', adminFeaturesRoutes);
+app.use('/api/v1/admin/agents', adminAgentsRoutes);
 app.use('/api/v1/addresses', addressesRoutes);
 app.use('/api/v1/features', featuresRoutes);
 
@@ -123,6 +127,7 @@ app.get('/api/v1', (req, res) => {
       auth: '/api/v1/auth',
       properties: '/api/v1/properties',
       agents: '/api/v1/agents',
+      agentTeams: '/api/v1/agent-teams',
       developers: '/api/v1/developers',
       favorites: '/api/v1/favorites',
       inquiries: '/api/v1/inquiries',

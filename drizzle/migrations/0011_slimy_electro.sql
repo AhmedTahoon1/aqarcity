@@ -1,0 +1,2 @@
+-- Empty migration file to fix missing 0011 issue
+-- This migration was skipped or lost during development

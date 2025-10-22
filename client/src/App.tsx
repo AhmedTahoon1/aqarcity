@@ -16,6 +16,7 @@ const Home = lazy(() => import('@/pages/Home'));
 const Properties = lazy(() => import('@/pages/Properties'));
 const PropertyDetails = lazy(() => import('@/pages/PropertyDetails'));
 const Agents = lazy(() => import('@/pages/Agents'));
+const AgentDetails = lazy(() => import('@/pages/AgentDetails'));
 const Developers = lazy(() => import('@/pages/Developers'));
 const DeveloperDetails = lazy(() => import('@/pages/DeveloperDetails'));
 const Archive = lazy(() => import('@/pages/Archive'));
@@ -31,6 +32,7 @@ const About = lazy(() => import('@/pages/About'));
 const Contact = lazy(() => import('@/pages/Contact'));
 const Compare = lazy(() => import('@/pages/Compare'));
 const VerifySearch = lazy(() => import('@/pages/VerifySearch'));
+const VerifyAgent = lazy(() => import('@/pages/VerifyAgent'));
 const MortgageCalculator = lazy(() => import('@/pages/MortgageCalculator'));
 const PrivacyPolicy = lazy(() => import('@/pages/legal/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('@/pages/legal/TermsOfService'));
@@ -38,6 +40,7 @@ const Disclaimer = lazy(() => import('@/pages/legal/Disclaimer'));
 const CookiePolicy = lazy(() => import('@/pages/legal/CookiePolicy'));
 const AddressesManagement = lazy(() => import('@/pages/admin/AddressesManagement'));
 const FeaturesManagement = lazy(() => import('@/pages/admin/Features'));
+const AgentsManagement = lazy(() => import('@/pages/admin/AgentsManagement'));
 
 function App() {
   const { i18n } = useTranslation();
@@ -61,6 +64,7 @@ function App() {
               <Route path="/properties" component={Properties} />
               <Route path="/properties/:id" component={PropertyDetails} />
               <Route path="/agents" component={Agents} />
+              <Route path="/agents/:id" component={AgentDetails} />
               <Route path="/developers" component={Developers} />
               <Route path="/developers/:id" component={DeveloperDetails} />
               <Route path="/archive" component={Archive} />
@@ -82,6 +86,7 @@ function App() {
               <Route path="/contact" component={Contact} />
               <Route path="/compare" component={Compare} />
               <Route path="/verify-search/:token" component={VerifySearch} />
+              <Route path="/verify-agent" component={VerifyAgent} />
               <Route path="/mortgage-calculator" component={MortgageCalculator} />
               <Route path="/privacy-policy" component={PrivacyPolicy} />
               <Route path="/terms-of-service" component={TermsOfService} />
@@ -92,6 +97,9 @@ function App() {
               </Route>
               <Route path="/admin/features">
                 <ProtectedRoute><FeaturesManagement /></ProtectedRoute>
+              </Route>
+              <Route path="/admin/agents">
+                <ProtectedRoute><AgentsManagement /></ProtectedRoute>
               </Route>
             </Suspense>
           </main>

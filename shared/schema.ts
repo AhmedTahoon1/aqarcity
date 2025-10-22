@@ -86,22 +86,165 @@ export const developers = pgTable('developers', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// Agents Table
+// Agent Status and Specialization Enums
+export const agentStatusEnum = pgEnum('agent_status', ['active', 'inactive', 'suspended', 'pending_verification']);
+export const agentSpecializationEnum = pgEnum('agent_specialization', ['residential_sale', 'residential_rent', 'commercial_sale', 'commercial_rent', 'luxury_properties', 'off_plan', 'investment']);
+export const agentLevelEnum = pgEnum('agent_level', ['junior', 'senior', 'team_leader', 'manager', 'director']);
+export const companyTypeEnum = pgEnum('company_type', ['individual', 'small_team', 'medium_company', 'large_company', 'franchise']);
+
+// Agents Table (Enhanced)
 export const agents = pgTable('agents', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').references(() => users.id).notNull(),
+  
+  // Basic Information
   bioEn: text('bio_en'),
   bioAr: text('bio_ar'),
   licenseNumber: varchar('license_number', { length: 100 }),
+  licenseExpiryDate: timestamp('license_expires_at'),
   verified: boolean('verified').default(false),
+  verifiedAt: timestamp('verified_at'),
+  status: agentStatusEnum('status').default('pending_verification'),
+  
+  // Performance Metrics
   rating: decimal('rating', { precision: 2, scale: 1 }).default('0.0'),
-  languages: json('languages').$type<string[]>().default([]),
+  reviewsCount: integer('reviews_count').default(0),
   propertiesCount: integer('properties_count').default(0),
+  activeListings: integer('active_listings').default(0),
   dealsClosed: integer('deals_closed').default(0),
+  totalSalesValue: decimal('total_sales_value', { precision: 15, scale: 2 }).default('0.00'),
+  averageDealValue: decimal('average_deal_value', { precision: 15, scale: 2 }).default('0.00'),
+  responseTime: integer('avg_response_time_hours').default(24), // in hours
+  
+  // Contact Information
   phone: varchar('phone', { length: 20 }),
   whatsapp: varchar('whatsapp', { length: 20 }),
   email: varchar('email', { length: 255 }),
+  website: text('website'),
+  socialMedia: json('social_media').$type<{
+    linkedin?: string;
+    instagram?: string;
+    facebook?: string;
+    twitter?: string;
+  }>().default({}),
+  
+  // Professional Details
+  languages: json('languages').$type<string[]>().default([]),
+  specializations: json('specializations').$type<string[]>().default([]),
+  preferredAreas: json('preferred_areas').$type<string[]>().default([]),
+  experienceYears: integer('experience_years').default(0),
+  agentLevel: agentLevelEnum('agent_level').default('junior'),
+  
+  // Company Information
+  companyName: varchar('company_name', { length: 255 }),
+  companyLogo: text('company_logo'),
+  companyType: companyTypeEnum('company_type').default('individual'),
+  teamSize: integer('team_size').default(1),
+  officeAddress: text('office_address'),
+  
+  // Availability & Working Hours
+  workingHours: json('working_hours').$type<{
+    monday?: { start: string; end: string; available: boolean };
+    tuesday?: { start: string; end: string; available: boolean };
+    wednesday?: { start: string; end: string; available: boolean };
+    thursday?: { start: string; end: string; available: boolean };
+    friday?: { start: string; end: string; available: boolean };
+    saturday?: { start: string; end: string; available: boolean };
+    sunday?: { start: string; end: string; available: boolean };
+  }>().default({}),
+  isAvailable: boolean('is_available').default(true),
+  
+  // Marketing & Profile
+  profileImage: text('profile_image'),
+  coverImage: text('cover_image'),
+  achievements: json('achievements').$type<string[]>().default([]),
+  certifications: json('certifications').$type<{
+    name: string;
+    issuer: string;
+    dateObtained: string;
+    expiryDate?: string;
+    certificateUrl?: string;
+  }[]>().default([]),
+  
+  // System Fields
+  lastActiveAt: timestamp('last_active_at'),
+  joinedAt: timestamp('joined_at').defaultNow().notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    userIdx: index('agents_user_idx').on(table.userId),
+    statusIdx: index('agents_status_idx').on(table.status),
+    verifiedIdx: index('agents_verified_idx').on(table.verified),
+    ratingIdx: index('agents_rating_idx').on(table.rating),
+    levelIdx: index('agents_level_idx').on(table.agentLevel),
+    availableIdx: index('agents_available_idx').on(table.isAvailable),
+    licenseIdx: index('agents_license_idx').on(table.licenseNumber),
+  };
+});
+
+// Agent Teams Table
+export const agentTeams = pgTable('agent_teams', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  leadAgentId: uuid('lead_agent_id').references(() => agents.id).notNull(),
+  companyName: varchar('company_name', { length: 255 }),
+  logo: text('logo'),
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    leadIdx: index('agent_teams_lead_idx').on(table.leadAgentId),
+    activeIdx: index('agent_teams_active_idx').on(table.isActive),
+  };
+});
+
+// Agent Team Members Table
+export const agentTeamMembers = pgTable('agent_team_members', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  teamId: uuid('team_id').references(() => agentTeams.id).notNull(),
+  agentId: uuid('agent_id').references(() => agents.id).notNull(),
+  role: varchar('role', { length: 100 }).default('member'), // member, co_leader, admin
+  joinedAt: timestamp('joined_at').defaultNow().notNull(),
+  isActive: boolean('is_active').default(true),
+}, (table) => {
+  return {
+    teamIdx: index('agent_team_members_team_idx').on(table.teamId),
+    agentIdx: index('agent_team_members_agent_idx').on(table.agentId),
+    activeIdx: index('agent_team_members_active_idx').on(table.isActive),
+  };
+});
+
+// Agent Performance Metrics Table
+export const agentMetrics = pgTable('agent_metrics', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  agentId: uuid('agent_id').references(() => agents.id).notNull(),
+  month: integer('month').notNull(), // 1-12
+  year: integer('year').notNull(),
+  
+  // Monthly Performance
+  propertiesListed: integer('properties_listed').default(0),
+  propertiesSold: integer('properties_sold').default(0),
+  propertiesRented: integer('properties_rented').default(0),
+  totalCommission: decimal('total_commission', { precision: 15, scale: 2 }).default('0.00'),
+  leadsGenerated: integer('leads_generated').default(0),
+  leadsConverted: integer('leads_converted').default(0),
+  viewingsArranged: integer('viewings_arranged').default(0),
+  clientMeetings: integer('client_meetings').default(0),
+  
+  // Quality Metrics
+  averageResponseTime: integer('avg_response_time_minutes').default(0),
+  customerSatisfactionScore: decimal('customer_satisfaction', { precision: 2, scale: 1 }).default('0.0'),
+  repeatClientRate: decimal('repeat_client_rate', { precision: 3, scale: 2 }).default('0.00'), // percentage
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    agentIdx: index('agent_metrics_agent_idx').on(table.agentId),
+    periodIdx: index('agent_metrics_period_idx').on(table.year, table.month),
+  };
 });
 
 // Properties Table
@@ -377,6 +520,23 @@ export const agentsRelations = relations(agents, ({ one, many }) => ({
   properties: many(properties),
   chatMessages: many(chatMessages),
   reviews: many(reviews),
+  teamMemberships: many(agentTeamMembers),
+  ledTeams: many(agentTeams),
+  metrics: many(agentMetrics),
+}));
+
+export const agentTeamsRelations = relations(agentTeams, ({ one, many }) => ({
+  leadAgent: one(agents, { fields: [agentTeams.leadAgentId], references: [agents.id] }),
+  members: many(agentTeamMembers),
+}));
+
+export const agentTeamMembersRelations = relations(agentTeamMembers, ({ one }) => ({
+  team: one(agentTeams, { fields: [agentTeamMembers.teamId], references: [agentTeams.id] }),
+  agent: one(agents, { fields: [agentTeamMembers.agentId], references: [agents.id] }),
+}));
+
+export const agentMetricsRelations = relations(agentMetrics, ({ one }) => ({
+  agent: one(agents, { fields: [agentMetrics.agentId], references: [agents.id] }),
 }));
 
 export const emiratesRelations = relations(emirates, ({ many }) => ({
@@ -460,16 +620,38 @@ export const propertyFeatures = pgTable('property_features', {
   };
 });
 
+// System Settings Table
+export const settings = pgTable('settings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  key: varchar('key', { length: 100 }).unique().notNull(),
+  value: text('value'),
+  description: text('description'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    keyIdx: index('settings_key_idx').on(table.key),
+  };
+});
+
 export const propertyFeaturesRelations = relations(propertyFeatures, ({ one, many }) => ({
   parent: one(propertyFeatures, { fields: [propertyFeatures.parentId], references: [propertyFeatures.id] }),
   children: many(propertyFeatures),
 }));
+
+export const settingsRelations = relations(settings, ({ }) => ({}));
 
 // Types
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Agent = typeof agents.$inferSelect;
 export type NewAgent = typeof agents.$inferInsert;
+export type AgentTeam = typeof agentTeams.$inferSelect;
+export type NewAgentTeam = typeof agentTeams.$inferInsert;
+export type AgentTeamMember = typeof agentTeamMembers.$inferSelect;
+export type NewAgentTeamMember = typeof agentTeamMembers.$inferInsert;
+export type AgentMetric = typeof agentMetrics.$inferSelect;
+export type NewAgentMetric = typeof agentMetrics.$inferInsert;
 export type Property = typeof properties.$inferSelect;
 export type NewProperty = typeof properties.$inferInsert;
 export type Developer = typeof developers.$inferSelect;
@@ -500,3 +682,5 @@ export type GuestSearch = typeof guestSearches.$inferSelect;
 export type NewGuestSearch = typeof guestSearches.$inferInsert;
 export type PropertyFeature = typeof propertyFeatures.$inferSelect;
 export type NewPropertyFeature = typeof propertyFeatures.$inferInsert;
+export type Setting = typeof settings.$inferSelect;
+export type NewSetting = typeof settings.$inferInsert;

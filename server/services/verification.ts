@@ -20,10 +20,13 @@ export class VerificationService {
       },
     });
 
-    this.twilioClient = twilio(
-      process.env.TWILIO_ACCOUNT_SID,
-      process.env.TWILIO_AUTH_TOKEN
-    );
+    // Only initialize Twilio if credentials are valid
+    if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_ACCOUNT_SID.startsWith('AC')) {
+      this.twilioClient = twilio(
+        process.env.TWILIO_ACCOUNT_SID,
+        process.env.TWILIO_AUTH_TOKEN
+      );
+    }
   }
 
   generateToken(): string {
@@ -94,8 +97,8 @@ export class VerificationService {
     console.log('🚀 دخلنا وظيفة sendWhatsAppVerification');
     console.log('🌍 NODE_ENV:', process.env.NODE_ENV);
     
-    if (process.env.NODE_ENV === 'development') {
-      // في بيئة التطوير، فقط طباعة الرمز
+    // في بيئة التطوير أو إذا لم يكن Twilio مُعد، فقط طباعة الرمز
+    if (process.env.NODE_ENV === 'development' || !this.twilioClient) {
       console.log(`📱 WhatsApp رمز التحقق لـ ${phone}: ${code}`);
       console.log(`🔍 اسم البحث: ${searchName}`);
       console.log('✅ تم عرض الرمز في console');

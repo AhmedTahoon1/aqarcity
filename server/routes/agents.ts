@@ -1,6 +1,6 @@
 import express from 'express';
 import { db } from '../../db.js';
-import { agents, users, properties, reviews } from '../../shared/schema.js';
+import { agents, users, properties } from '../../shared/schema.js';
 import { eq, desc, avg, count } from 'drizzle-orm';
 import { authenticateToken, AuthRequest } from '../middleware/auth.js';
 
@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get single agent
+// Get single agent with full details
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -60,6 +60,11 @@ router.get('/:id/properties', async (req, res) => {
       .where(eq(properties.agentId, id))
       .orderBy(desc(properties.createdAt));
 
+    // Update agent properties count
+    await db.update(agents)
+      .set({ propertiesCount: agentProperties.length })
+      .where(eq(agents.id, id));
+
     res.json(agentProperties);
   } catch (error) {
     console.error('Agent properties fetch error:', error);
@@ -67,63 +72,45 @@ router.get('/:id/properties', async (req, res) => {
   }
 });
 
-// Add review for agent
-router.post('/:id/review', authenticateToken, async (req: AuthRequest, res) => {
-  try {
-    const { id } = req.params;
-    const { rating, comment } = req.body;
 
-    if (rating < 1 || rating > 5) {
-      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+
+// Verify agent by phone or email
+router.get('/verify', async (req, res) => {
+  try {
+    const { phone, email } = req.query;
+    
+    let agent;
+    if (phone) {
+      agent = await db.select({
+        agent: agents,
+        user: users
+      })
+      .from(agents)
+      .innerJoin(users, eq(agents.userId, users.id))
+      .where(eq(agents.phone, phone as string))
+      .limit(1);
+    } else if (email) {
+      agent = await db.select({
+        agent: agents,
+        user: users
+      })
+      .from(agents)
+      .innerJoin(users, eq(agents.userId, users.id))
+      .where(eq(users.email, email as string))
+      .limit(1);
     }
 
-    const newReview = await db.insert(reviews).values({
-      agentId: id,
-      userId: req.user!.id,
-      rating,
-      comment
-    }).returning();
-
-    // Update agent rating
-    const avgRating = await db.select({
-      avgRating: avg(reviews.rating)
-    })
-    .from(reviews)
-    .where(eq(reviews.agentId, id));
-
-    await db.update(agents)
-      .set({ rating: avgRating[0].avgRating?.toString() || '0' })
-      .where(eq(agents.id, id));
-
-    res.status(201).json({
-      message: 'Review added successfully',
-      review: newReview[0]
-    });
+    if (agent && agent.length > 0) {
+      res.json({ found: true, agent: agent[0] });
+    } else {
+      res.json({ found: false });
+    }
   } catch (error) {
-    console.error('Review creation error:', error);
-    res.status(500).json({ error: 'Failed to add review' });
+    console.error('Agent verification error:', error);
+    res.status(500).json({ error: 'Failed to verify agent' });
   }
 });
 
-// Get agent reviews
-router.get('/:id/reviews', async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    const agentReviews = await db.select({
-      review: reviews,
-      user: users
-    })
-    .from(reviews)
-    .innerJoin(users, eq(reviews.userId, users.id))
-    .where(eq(reviews.agentId, id))
-    .orderBy(desc(reviews.createdAt));
 
-    res.json(agentReviews);
-  } catch (error) {
-    console.error('Agent reviews fetch error:', error);
-    res.status(500).json({ error: 'Failed to fetch agent reviews' });
-  }
-});
 
 export default router;
