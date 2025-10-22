@@ -90,6 +90,9 @@ import adminFeaturesRoutes from './routes/admin/features.js';
 import adminAgentsRoutes from './routes/admin/agents.js';
 import addressesRoutes from './routes/addresses.js';
 import featuresRoutes from './routes/features.js';
+import socialMediaRoutes from './routes/social-media.js';
+import statisticsRoutes from './routes/statistics.js';
+import settingsRoutes from './routes/settings.js';
 
 // API routes
 app.use('/api/v1/auth', authRoutes);
@@ -114,6 +117,9 @@ app.use('/api/v1/admin/features', adminFeaturesRoutes);
 app.use('/api/v1/admin/agents', adminAgentsRoutes);
 app.use('/api/v1/addresses', addressesRoutes);
 app.use('/api/v1/features', featuresRoutes);
+app.use('/api/v1/social-media', socialMediaRoutes);
+app.use('/api/v1/statistics', statisticsRoutes);
+app.use('/api/v1/settings', settingsRoutes);
 
 // Serve uploaded files
 app.use('/uploads', express.static('uploads'));

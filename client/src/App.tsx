@@ -41,6 +41,7 @@ const CookiePolicy = lazy(() => import('@/pages/legal/CookiePolicy'));
 const AddressesManagement = lazy(() => import('@/pages/admin/AddressesManagement'));
 const FeaturesManagement = lazy(() => import('@/pages/admin/Features'));
 const AgentsManagement = lazy(() => import('@/pages/admin/AgentsManagement'));
+const SocialMediaManagement = lazy(() => import('@/pages/admin/SocialMediaManagement'));
 
 function App() {
   const { i18n } = useTranslation();
@@ -100,6 +101,9 @@ function App() {
               </Route>
               <Route path="/admin/agents">
                 <ProtectedRoute><AgentsManagement /></ProtectedRoute>
+              </Route>
+              <Route path="/admin/settings">
+                <ProtectedRoute><SocialMediaManagement /></ProtectedRoute>
               </Route>
             </Suspense>
           </main>

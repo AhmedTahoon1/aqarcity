@@ -139,3 +139,5 @@ export const requireRole = (roles: string | string[]) => {
 export const generateToken = (user: { id: string; email: string; role: string }) => {
   return generateTokens(user).accessToken;
 };
+
+export const requireAdmin = requireRole(['admin', 'super_admin']);

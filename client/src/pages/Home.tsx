@@ -6,10 +6,12 @@ import AdvancedSearchBar from '@/components/shared/AdvancedSearchBar';
 import PropertyCard from '@/components/property/PropertyCard';
 import { PropertyCardSkeleton } from '@/components/skeletons';
 import { StaggeredList, AnimatedContainer, AnimatedButton } from '@/components/animations';
-import { ArrowRight, Star, Users, Building } from 'lucide-react';
+import { ArrowRight, Star, Users, Building, BarChart3, Award, ThumbsUp, TrendingUp, Home as HomeIcon, Key, MapPin, CheckCircle, Target } from 'lucide-react';
+import axios from 'axios';
 
 export default function Home() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
   const [, setLocation] = useLocation();
 
   const { data: featuredProperties, isLoading, error } = useQuery({
@@ -90,11 +92,29 @@ export default function Home() {
     setLocation(`/properties?${params.toString()}`);
   };
 
-  const stats = [
-    { icon: Building, value: '5000+', label: 'Properties' },
-    { icon: Users, value: '500+', label: 'Agents' },
-    { icon: Star, value: '4.8', label: 'Rating' },
-  ];
+  const { data: statistics = [] } = useQuery({
+    queryKey: ['statistics'],
+    queryFn: async () => {
+      const { data } = await axios.get('/api/v1/statistics');
+      return data;
+    },
+  });
+
+  const iconMap: Record<string, any> = {
+    BarChart3: BarChart3,
+    Building2: Building,
+    Building: Building,
+    Users: Users,
+    Award: Award,
+    ThumbsUp: ThumbsUp,
+    TrendingUp: TrendingUp,
+    Home: HomeIcon,
+    Key: Key,
+    MapPin: MapPin,
+    Star: Star,
+    CheckCircle: CheckCircle,
+    Target: Target
+  };
 
   return (
     <div className="min-h-screen">
@@ -133,24 +153,27 @@ export default function Home() {
       {/* Stats Section */}
       <section className="py-16 -mt-8 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {stats.map((stat, index) => (
-              <div 
-                key={index} 
-                className="bg-white rounded-2xl p-8 shadow-medium hover:shadow-hard transition-all duration-300 transform hover:-translate-y-1 animate-scale-in"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="flex flex-col items-center text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 text-white rounded-2xl mb-4 shadow-lg">
-                    <stat.icon className="w-8 h-8" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+            {statistics.map((stat: any, index: number) => {
+              const IconComponent = iconMap[stat.icon] || BarChart3;
+              return (
+                <div 
+                  key={stat.id} 
+                  className="bg-white rounded-2xl p-8 shadow-medium hover:shadow-hard transition-all duration-300 transform hover:-translate-y-1 animate-scale-in"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 text-white rounded-2xl mb-4 shadow-lg">
+                      <IconComponent className="w-8 h-8" />
+                    </div>
+                    <div className="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent mb-2">
+                      {stat.number}
+                    </div>
+                    <div className="text-gray-600 font-medium">{isArabic ? stat.titleAr : stat.titleEn}</div>
                   </div>
-                  <div className="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent mb-2">
-                    {stat.value}
-                  </div>
-                  <div className="text-gray-600 font-medium">{stat.label}</div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

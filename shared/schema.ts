@@ -634,12 +634,45 @@ export const settings = pgTable('settings', {
   };
 });
 
+// Social Media Links Table
+export const socialMediaLinks = pgTable('social_media_links', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  facebook: text('facebook'),
+  instagram: text('instagram'),
+  x: text('x'),
+  snapchat: text('snapchat'),
+  linkedin: text('linkedin'),
+  tiktok: text('tiktok'),
+  youtube: text('youtube'),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Statistics Table
+export const statistics = pgTable('statistics', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  number: varchar('number', { length: 50 }).notNull(),
+  titleEn: varchar('title_en', { length: 255 }).notNull(),
+  titleAr: varchar('title_ar', { length: 255 }).notNull(),
+  icon: varchar('icon', { length: 100 }).notNull(),
+  isVisible: boolean('is_visible').default(true).notNull(),
+  displayOrder: integer('display_order').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    visibleIdx: index('statistics_visible_idx').on(table.isVisible),
+    orderIdx: index('statistics_order_idx').on(table.displayOrder),
+  };
+});
+
 export const propertyFeaturesRelations = relations(propertyFeatures, ({ one, many }) => ({
   parent: one(propertyFeatures, { fields: [propertyFeatures.parentId], references: [propertyFeatures.id] }),
   children: many(propertyFeatures),
 }));
 
 export const settingsRelations = relations(settings, ({ }) => ({}));
+export const socialMediaLinksRelations = relations(socialMediaLinks, ({ }) => ({}));
+export const statisticsRelations = relations(statistics, ({ }) => ({}));
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -684,3 +717,7 @@ export type PropertyFeature = typeof propertyFeatures.$inferSelect;
 export type NewPropertyFeature = typeof propertyFeatures.$inferInsert;
 export type Setting = typeof settings.$inferSelect;
 export type NewSetting = typeof settings.$inferInsert;
+export type SocialMediaLink = typeof socialMediaLinks.$inferSelect;
+export type NewSocialMediaLink = typeof socialMediaLinks.$inferInsert;
+export type Statistic = typeof statistics.$inferSelect;
+export type NewStatistic = typeof statistics.$inferInsert;

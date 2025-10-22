@@ -1,10 +1,20 @@
 import { Link } from 'wouter';
 import { useTranslation } from 'react-i18next';
-import { Phone, Mail, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { Phone, Mail, MapPin, Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 
 export default function Footer() {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === 'ar';
+
+  const { data: socialMedia } = useQuery({
+    queryKey: ['social-media'],
+    queryFn: async () => {
+      const { data } = await axios.get('/api/v1/social-media');
+      return data;
+    },
+  });
 
   const footerLinks = {
     company: [
@@ -27,12 +37,30 @@ export default function Footer() {
     ]
   };
 
-  const socialLinks = [
-    { icon: Facebook, href: '#', label: 'Facebook' },
-    { icon: Twitter, href: '#', label: 'Twitter' },
-    { icon: Instagram, href: '#', label: 'Instagram' },
-    { icon: Linkedin, href: '#', label: 'LinkedIn' },
+  const allSocialPlatforms = [
+    { icon: Facebook, key: 'facebook', label: 'Facebook' },
+    { icon: Instagram, key: 'instagram', label: 'Instagram' },
+    { icon: Twitter, key: 'x', label: 'X' },
+    { icon: () => (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+        <path d="M12.5 2c5.523 0 10 4.477 10 10s-4.477 10-10 10-10-4.477-10-10 4.477-10 10-10zm0 2c-4.418 0-8 3.582-8 8s3.582 8 8 8 8-3.582 8-8-3.582-8-8-8zm-1.5 4.5c0-.828.672-1.5 1.5-1.5s1.5.672 1.5 1.5v5c0 .828-.672 1.5-1.5 1.5s-1.5-.672-1.5-1.5v-5zm0 8c0-.828.672-1.5 1.5-1.5s1.5.672 1.5 1.5.672 1.5-1.5 1.5-1.5-.672-1.5-1.5z"/>
+      </svg>
+    ), key: 'snapchat', label: 'Snapchat' },
+    { icon: Linkedin, key: 'linkedin', label: 'LinkedIn' },
+    { icon: () => (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+      </svg>
+    ), key: 'tiktok', label: 'TikTok' },
+    { icon: Youtube, key: 'youtube', label: 'YouTube' },
   ];
+
+  const socialLinks = allSocialPlatforms.filter(
+    (platform) => socialMedia?.[platform.key]
+  ).map((platform) => ({
+    ...platform,
+    href: socialMedia[platform.key],
+  }));
 
   return (
     <footer className="bg-gray-900 text-white">
@@ -121,18 +149,22 @@ export default function Footer() {
           </div>
           
           {/* Social Links */}
-          <div className="flex space-x-4 rtl:space-x-reverse">
-            {socialLinks.map((social, index) => (
-              <a
-                key={index}
-                href={social.href}
-                className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary-600 transition-colors"
-                aria-label={social.label}
-              >
-                <social.icon className="w-4 h-4" />
-              </a>
-            ))}
-          </div>
+          {socialLinks.length > 0 && (
+            <div className="flex space-x-4 rtl:space-x-reverse">
+              {socialLinks.map((social, index) => (
+                <a
+                  key={index}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary-600 transition-colors"
+                  aria-label={social.label}
+                >
+                  <social.icon className="w-4 h-4" />
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </footer>
