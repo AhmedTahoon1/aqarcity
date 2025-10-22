@@ -132,3 +132,12 @@ export const addressesAPI = {
   delete: (id: string) => api.delete(`/admin/addresses/${id}`),
   getPropertiesCount: (id: string) => api.get(`/admin/addresses/${id}/properties-count`),
 };
+
+export const featuresAPI = {
+  getAll: () => api.get('/features'),
+  getAdmin: () => api.get('/admin/features'),
+  create: (data: any) => api.post('/admin/features', data),
+  update: (id: string, data: any) => api.put(`/admin/features/${id}`, data),
+  delete: (id: string) => api.delete(`/admin/features/${id}`),
+  toggle: (id: string) => api.put(`/admin/features/${id}/toggle`),
+};

@@ -1,3 +1,4 @@
+// Unified property features - matches database and frontend
 export const PROPERTY_FEATURES = {
   amenities: [
     { id: 'swimming_pool', nameEn: 'Swimming Pool', nameAr: 'مسبح' },

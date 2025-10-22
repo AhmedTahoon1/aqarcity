@@ -85,7 +85,9 @@ import usersRoutes from './routes/users.js';
 import citiesRoutes from './routes/cities.js';
 import adminCitiesRoutes from './routes/admin/cities.js';
 import adminAddressesRoutes from './routes/admin/addresses.js';
+import adminFeaturesRoutes from './routes/admin/features.js';
 import addressesRoutes from './routes/addresses.js';
+import featuresRoutes from './routes/features.js';
 
 // API routes
 app.use('/api/v1/auth', authRoutes);
@@ -105,7 +107,9 @@ app.use('/api/v1/users', usersRoutes);
 app.use('/api/v1/cities', citiesRoutes);
 app.use('/api/v1/admin/cities', adminCitiesRoutes);
 app.use('/api/v1/admin/addresses', adminAddressesRoutes);
+app.use('/api/v1/admin/features', adminFeaturesRoutes);
 app.use('/api/v1/addresses', addressesRoutes);
+app.use('/api/v1/features', featuresRoutes);
 
 // Serve uploaded files
 app.use('/uploads', express.static('uploads'));

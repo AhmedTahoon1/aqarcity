@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import { featuresAPI } from '@/lib/api';
 import { PROPERTY_FEATURES, getFeatureName } from '../../data/property-features';
 import { Home, MapPin, Shield } from 'lucide-react';
 
@@ -14,6 +16,25 @@ interface PropertyFeaturesProps {
 export default function PropertyFeatures({ features, compact = false }: PropertyFeaturesProps) {
   const { i18n } = useTranslation();
   const isArabic = i18n.language === 'ar';
+
+  // Fetch features from API for name mapping
+  const { data: apiFeatures } = useQuery({
+    queryKey: ['features'],
+    queryFn: () => featuresAPI.getAll().then(res => res.data),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const getFeatureNameFromAPI = (id: string, language: 'en' | 'ar'): string => {
+    if (!apiFeatures) return getFeatureName(id, language);
+    
+    for (const category of Object.values(apiFeatures)) {
+      const feature = (category as any[]).find(f => f.id === id);
+      if (feature) {
+        return language === 'ar' ? feature.nameAr : feature.nameEn;
+      }
+    }
+    return getFeatureName(id, language);
+  };
 
   const categories = [
     {
@@ -64,7 +85,7 @@ export default function PropertyFeatures({ features, compact = false }: Property
             key={index}
             className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
           >
-            {getFeatureName(featureId, isArabic ? 'ar' : 'en')}
+            {getFeatureNameFromAPI(featureId, isArabic ? 'ar' : 'en')}
           </span>
         ))}
         {allFeatures.length > 3 && (
@@ -100,7 +121,7 @@ export default function PropertyFeatures({ features, compact = false }: Property
                 >
                   <div className="w-2 h-2 rounded-full bg-current mr-2 rtl:mr-0 rtl:ml-2"></div>
                   <span className="text-sm font-medium">
-                    {getFeatureName(featureId, isArabic ? 'ar' : 'en')}
+                    {getFeatureNameFromAPI(featureId, isArabic ? 'ar' : 'en')}
                   </span>
                 </div>
               ))}

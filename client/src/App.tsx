@@ -37,6 +37,7 @@ const TermsOfService = lazy(() => import('@/pages/legal/TermsOfService'));
 const Disclaimer = lazy(() => import('@/pages/legal/Disclaimer'));
 const CookiePolicy = lazy(() => import('@/pages/legal/CookiePolicy'));
 const AddressesManagement = lazy(() => import('@/pages/admin/AddressesManagement'));
+const FeaturesManagement = lazy(() => import('@/pages/admin/Features'));
 
 function App() {
   const { i18n } = useTranslation();
@@ -88,6 +89,9 @@ function App() {
               <Route path="/cookie-policy" component={CookiePolicy} />
               <Route path="/admin/addresses">
                 <ProtectedRoute><AddressesManagement /></ProtectedRoute>
+              </Route>
+              <Route path="/admin/features">
+                <ProtectedRoute><FeaturesManagement /></ProtectedRoute>
               </Route>
             </Suspense>
           </main>

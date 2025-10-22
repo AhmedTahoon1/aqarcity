@@ -1,4 +1,5 @@
-export const PROPERTY_FEATURES = {
+// Static fallback data - matches database structure
+const STATIC_FEATURES = {
   amenities: [
     { id: 'swimming_pool', nameEn: 'Swimming Pool', nameAr: 'مسبح' },
     { id: 'gym', nameEn: 'Gym', nameAr: 'صالة رياضية' },
@@ -45,6 +46,26 @@ export const PROPERTY_FEATURES = {
     { id: 'security_system', nameEn: 'Security System', nameAr: 'نظام أمني' }
   ]
 };
+
+// Dynamic features loaded from API
+let DYNAMIC_FEATURES = null;
+
+// Function to fetch features from API
+export const fetchPropertyFeatures = async () => {
+  try {
+    const response = await fetch('/api/v1/features');
+    if (response.ok) {
+      DYNAMIC_FEATURES = await response.json();
+      return DYNAMIC_FEATURES;
+    }
+  } catch (error) {
+    console.warn('Failed to fetch dynamic features, using static fallback');
+  }
+  return STATIC_FEATURES;
+};
+
+// Export features (dynamic if available, static as fallback)
+export const PROPERTY_FEATURES = DYNAMIC_FEATURES || STATIC_FEATURES;
 
 export type FeatureCategory = keyof typeof PROPERTY_FEATURES;
 export type PropertyFeature = typeof PROPERTY_FEATURES[FeatureCategory][number];

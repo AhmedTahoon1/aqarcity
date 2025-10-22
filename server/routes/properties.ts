@@ -34,6 +34,10 @@ router.get('/', async (req, res) => {
       limit = 12,
       sort = 'newest'
     } = req.query;
+    
+    if (features) {
+      console.log('Features filter received:', features);
+    }
 
     let query = db.select({
       property: properties,
@@ -119,21 +123,21 @@ router.get('/', async (req, res) => {
         // Amenities filtering
         if (parsedFeatures.amenities && parsedFeatures.amenities.length > 0) {
           parsedFeatures.amenities.forEach((amenity: string) => {
-            conditions.push(sql`${properties.features}::jsonb -> 'amenities' ? ${amenity}`);
+            conditions.push(sql`${properties.features}::text LIKE ${`%${amenity}%`}`);
           });
         }
         
         // Location features filtering
         if (parsedFeatures.location && parsedFeatures.location.length > 0) {
           parsedFeatures.location.forEach((feature: string) => {
-            conditions.push(sql`${properties.features}::jsonb -> 'location' ? ${feature}`);
+            conditions.push(sql`${properties.features}::text LIKE ${`%${feature}%`}`);
           });
         }
         
         // Security features filtering
         if (parsedFeatures.security && parsedFeatures.security.length > 0) {
           parsedFeatures.security.forEach((feature: string) => {
-            conditions.push(sql`${properties.features}::jsonb -> 'security' ? ${feature}`);
+            conditions.push(sql`${properties.features}::text LIKE ${`%${feature}%`}`);
           });
         }
       } catch (e) {
@@ -145,21 +149,21 @@ router.get('/', async (req, res) => {
     if (amenities) {
       const amenitiesArray = Array.isArray(amenities) ? amenities : [amenities];
       amenitiesArray.forEach(amenity => {
-        conditions.push(sql`${properties.features}::jsonb -> 'amenities' ? ${amenity}`);
+        conditions.push(sql`${properties.features}::text LIKE ${`%${amenity}%`}`);
       });
     }
     
     if (locationFeatures) {
       const locationArray = Array.isArray(locationFeatures) ? locationFeatures : [locationFeatures];
       locationArray.forEach(feature => {
-        conditions.push(sql`${properties.features}::jsonb -> 'location' ? ${feature}`);
+        conditions.push(sql`${properties.features}::text LIKE ${`%${feature}%`}`);
       });
     }
     
     if (security) {
       const securityArray = Array.isArray(security) ? security : [security];
       securityArray.forEach(feature => {
-        conditions.push(sql`${properties.features}::jsonb -> 'security' ? ${feature}`);
+        conditions.push(sql`${properties.features}::text LIKE ${`%${feature}%`}`);
       });
     }
 

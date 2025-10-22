@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import { featuresAPI } from '@/lib/api';
 import { PROPERTY_FEATURES } from '../../data/property-features';
 import { Home, MapPin, Shield, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -20,6 +22,20 @@ export default function FeaturesFilter({ selectedFeatures, onFeaturesChange }: F
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === 'ar';
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
+  const [features, setFeatures] = useState(PROPERTY_FEATURES);
+
+  // Fetch features from API
+  const { data: apiFeatures } = useQuery({
+    queryKey: ['features'],
+    queryFn: () => featuresAPI.getAll().then(res => res.data),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  useEffect(() => {
+    if (apiFeatures) {
+      setFeatures(apiFeatures);
+    }
+  }, [apiFeatures]);
 
   const categories = [
     {
@@ -89,7 +105,7 @@ export default function FeaturesFilter({ selectedFeatures, onFeaturesChange }: F
       {categories.map(category => {
         const Icon = category.icon;
         const isExpanded = expandedSections.includes(category.key);
-        const categoryFeatures = PROPERTY_FEATURES[category.key];
+        const categoryFeatures = features[category.key];
         const selectedCount = selectedFeatures[category.key].length;
 
         return (

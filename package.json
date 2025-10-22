@@ -28,6 +28,13 @@
     "seed:clean-properties": "tsx drizzle/seed-clean-properties.ts",
     "test:addresses-api": "tsx drizzle/test-addresses-api.ts",
     "add:more-properties": "tsx drizzle/add-more-properties.ts",
+    "create:features-table": "tsx drizzle/create-features-table.ts",
+    "fix:features-table": "tsx drizzle/fix-features-table.ts",
+    "recreate:features-table": "tsx drizzle/recreate-features-table.ts",
+    "seed:features": "tsx drizzle/seed-features.ts",
+    "test:features-system": "tsx drizzle/test-features-system.ts",
+    "delete:all-properties": "tsx drizzle/delete-all-properties.ts",
+    "seed:professional-properties": "tsx drizzle/seed-professional-properties.ts",
     "start": "node dist/server/index.js",
     "migrate-cities": "npm run db:migrate-cities",
     "migrate-addresses": "npm run db:migrate-addresses"

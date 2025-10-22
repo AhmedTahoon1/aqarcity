@@ -440,6 +440,31 @@ export const savedSearchesRelations = relations(savedSearches, ({ one }) => ({
   originalGuest: one(guestSearches, { fields: [savedSearches.originalGuestId], references: [guestSearches.id] }),
 }));
 
+// Property Features Management System
+export const propertyFeatures = pgTable('property_features', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  nameEn: varchar('name_en', { length: 100 }).notNull(),
+  nameAr: varchar('name_ar', { length: 100 }).notNull(),
+  category: varchar('category', { length: 20 }).notNull(), // amenities, location, security
+  parentId: uuid('parent_id').references(() => propertyFeatures.id),
+  level: integer('level').notNull().default(1), // 0=category, 1=feature
+  displayOrder: integer('display_order').notNull().default(0),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    categoryIdx: index('property_features_category_idx').on(table.category),
+    parentIdx: index('property_features_parent_idx').on(table.parentId),
+    activeIdx: index('property_features_active_idx').on(table.isActive),
+  };
+});
+
+export const propertyFeaturesRelations = relations(propertyFeatures, ({ one, many }) => ({
+  parent: one(propertyFeatures, { fields: [propertyFeatures.parentId], references: [propertyFeatures.id] }),
+  children: many(propertyFeatures),
+}));
+
 // Types
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -473,3 +498,5 @@ export type SavedSearch = typeof savedSearches.$inferSelect;
 export type NewSavedSearch = typeof savedSearches.$inferInsert;
 export type GuestSearch = typeof guestSearches.$inferSelect;
 export type NewGuestSearch = typeof guestSearches.$inferInsert;
+export type PropertyFeature = typeof propertyFeatures.$inferSelect;
+export type NewPropertyFeature = typeof propertyFeatures.$inferInsert;
