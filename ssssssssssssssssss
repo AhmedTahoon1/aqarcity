@@ -1,0 +1,71 @@
+[33mcommit 13f6deb9d70af4d322652c40c4f61acafa192558[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m
+Author: Ahmed Tahoon <43423641+AhmedTahoon1@users.noreply.github.com>
+Date:   Wed Oct 22 03:08:00 2025 +0300
+
+    Features Crud & Filter Work Correctly
+
+[33mcommit 18ee9fb9f8c07229e0fa5b30640c8ffbef818ede[m
+Author: Ahmed Tahoon <43423641+AhmedTahoon1@users.noreply.github.com>
+Date:   Wed Oct 22 02:03:26 2025 +0300
+
+    update location filter & start features admin
+
+[33mcommit 631c25b05597148a2f18e20ad1e312278e8652ac[m
+Author: Ahmed Tahoon <43423641+AhmedTahoon1@users.noreply.github.com>
+Date:   Tue Oct 21 08:44:28 2025 +0300
+
+    addresses form & filters work Correctly
+
+[33mcommit d69ab02f9fa1c1593312d652f041bc8823541194[m
+Author: Ahmed Tahoon <43423641+AhmedTahoon1@users.noreply.github.com>
+Date:   Fri Oct 10 22:39:00 2025 +0300
+
+    improve favorite system & legal pages
+
+[33mcommit 7267298506eabb5e8c27f737587b65aeeceff7a9[m
+Author: Ahmed Tahoon <43423641+AhmedTahoon1@users.noreply.github.com>
+Date:   Fri Oct 10 21:27:31 2025 +0300
+
+    improve login & profile edit
+
+[33mcommit 12ce7fb62d2c768553313894537f21235557cba5[m
+Author: Ahmed Tahoon <43423641+AhmedTahoon1@users.noreply.github.com>
+Date:   Fri Oct 10 19:53:51 2025 +0300
+
+    improve search & Featured properties
+
+[33mcommit 5cd59f66e1c93375d0e19b81ae5743595a427551[m
+Author: Ahmed Tahoon <43423641+AhmedTahoon1@users.noreply.github.com>
+Date:   Fri Oct 10 04:42:15 2025 +0300
+
+    saved search
+
+[33mcommit a6f59abb6dabda7e8ea42e0d237e3332a216dbb3[m
+Author: Ahmed Tahoon <43423641+AhmedTahoon1@users.noreply.github.com>
+Date:   Fri Oct 10 03:39:33 2025 +0300
+
+    improve database & indexing & start with saved search
+
+[33mcommit ee925fe9694ecb18bf2461e29d75406d0c46905f[m
+Author: Ahmed Tahoon <43423641+AhmedTahoon1@users.noreply.github.com>
+Date:   Fri Oct 10 02:13:12 2025 +0300
+
+    compare properties - support arabic & Save RTL direction
+
+[33mcommit b4969a6783d276d74c255881b73d3e52b205d371[m
+Author: Ahmed Tahoon <43423641+AhmedTahoon1@users.noreply.github.com>
+Date:   Fri Oct 10 01:16:48 2025 +0300
+
+    code splitting
+
+[33mcommit 76e580a8aba912f45e667fe9a45865c788b74229[m
+Author: Ahmed Tahoon <43423641+AhmedTahoon1@users.noreply.github.com>
+Date:   Fri Oct 10 01:10:31 2025 +0300
+
+    2- image lazy loading
+
+[33mcommit fa09d52c873ef8137663b9e5b8cab3edd9401082[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Ahmed Tahoon <43423641+AhmedTahoon1@users.noreply.github.com>
+Date:   Fri Oct 10 00:53:34 2025 +0300
+
+    skelton & Animation
