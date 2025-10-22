@@ -22,8 +22,8 @@
 
 #### للاختبار (Sandbox):
 ```env
-TWILIO_ACCOUNT_SID=AC8a8868fdc225c81b887b229f96e6d28e
-TWILIO_AUTH_TOKEN=30674add7ea843dd1331164299c75100
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
 TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
 ```
 
